@@ -104,10 +104,9 @@ A full Cheats page in the config menu, reachable from the title screen or the ca
 **Power** — Off / 2x / 5x / 10x
 
 - Attack, Magic Attack, Defence, Magic Defence and Agility: each multiplied independently, so you can turn up exactly what you want
-- Permanent Stat Bonus: Off / +999 / +9999 added across the board, for when a
-  multiplier isn't blunt enough
+- Stat Bonus: Off / +999 / +9999 bonus to max HP, max MP and every combat stat, for when a multiplier isn't blunt enough. It goes through the game's own stat formula and caps and is never written to your save, so switching it off takes it away again
 
-Multipliers take effect from the next battle or equipment change.
+Multipliers and the stat bonus take effect from the next battle or equipment change.
 
 **Progression**
 
@@ -123,7 +122,7 @@ Multipliers take effect from the next battle or equipment change.
 
 - Give All Items: one of everything the game defines, in a single press
 - Nine targeted grants when you want less than everything: Heal (27), Usable (51), Spellbooks (72), Arm (35), Finger (30), Ear (29), Neck (30), Chest (36) and Valuables (62)
-- Infinite Items: every stack you carry stays full, so nothing is spent by using or selling it
+- Infinite Items: every stack you carry stays full, so nothing is spent by using or selling it. Key items (Valuables) are left alone so story checks still see the count they expect
 
 Grants add to what you already hold rather than replacing it, hand you one of each, and skip the unused entries that show up in game as Worthless Junk.
 

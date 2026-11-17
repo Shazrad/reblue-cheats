@@ -23,8 +23,15 @@ REX_EXTERN(__imp__Player_CalcBattleParams);
 // Read before the call: a guest function is free to clobber its argument
 // registers, and this one does. Scaling after it returns cannot compound,
 // because the call rebuilds every field of the destination first.
+//
+// The stat bonus rides r3 instead: it is lent to the chara's permanent bonus
+// slots for the length of the call, so the guest adds it with its own formula
+// and caps, and is taken back before anything can save it.
 REX_HOOK_RAW(Player_CalcBattleParams) {
+  auto &cheats = bd::engine::Cheats::Get();
   const u32 params = ctx.r4.u32;
+  const auto loan = cheats.LendStatBonus(ctx.r3.u32);
   __imp__Player_CalcBattleParams(ctx, base);
-  bd::engine::Cheats::Get().ScaleBattleParams(params);
+  cheats.ReturnStatBonus(loan);
+  cheats.ScaleBattleParams(params);
 }

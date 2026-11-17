@@ -112,9 +112,10 @@ REXCVAR_DEFINE_INT32(bd_cheat_agility_mult, 1, kCvarGroup,
                      "finishes each stat recompute. 1 leaves it alone.");
 
 REXCVAR_DEFINE_INT32(bd_cheat_stat_bonus, 0, kCvarGroup,
-                     "Flat addition held in every permanent stat bonus slot: "
-                     "max HP/MP, attack, magic attack, defense, magic defense "
-                     "and agility. 0 is off.");
+                     "Bonus applied to max HP/MP, attack, magic attack, "
+                     "defense, magic defense and agility at each stat "
+                     "recompute, through the game's own formula and caps. "
+                     "Never written to the save. 0 is off.");
 
 REXCVAR_DEFINE_INT32(bd_cheat_exp_mult, 1, kCvarGroup,
                      "Multiply the EXP a battle awards. 1 leaves it alone.");
@@ -136,7 +137,8 @@ REXCVAR_DEFINE_BOOL(bd_cheat_infinite_medals, false, kCvarGroup,
 
 REXCVAR_DEFINE_BOOL(bd_cheat_infinite_items, false, kCvarGroup,
                     "Hold every occupied inventory slot at a full stack, so "
-                    "nothing is spent by using or selling it.");
+                    "nothing is spent by using or selling it. Key items "
+                    "(Valuables) are left alone.");
 
 REXCVAR_DEFINE_BOOL(bd_cheat_give_all_items, false, kCvarGroup,
                     "Fill the inventory with one full stack of every item the "
@@ -543,8 +545,7 @@ void Cheats::Init() {
 
 bool Cheats::AnyPin() const {
   return invincible_ || infiniteMP_ || infiniteGold_ || statusImmune_ ||
-         unlockClasses_ || oneHitKill_ || infiniteMedals_ || infiniteItems_ ||
-         statBonus_ > 0;
+         unlockClasses_ || oneHitKill_ || infiniteMedals_ || infiniteItems_;
 }
 
 void Cheats::Apply() {
@@ -677,34 +678,22 @@ void Cheats::Apply() {
     }
   }
 
-  if (unlockClasses_ || statBonus_ > 0) {
+  // The stat bonus is not a pin: LendStatBonus applies it per recompute, so
+  // nothing of it is ever left in the save.
+  if (unlockClasses_) {
     const auto roster = g.FieldPlayerEntity().Roster();
     if (roster) {
       const size_t n = roster.Size();
-      const u32 bonus = static_cast<u32>(statBonus_);
       for (size_t i = 0; i < n; ++i) {
         Player c = roster.At(i).Chara();
         if (!c)
           continue;
-        if (unlockClasses_ && c.UnlockedClasses() != kAllClasses) {
+        if (c.UnlockedClasses() != kAllClasses) {
           const u32 had = c.UnlockedClasses();
           if (c.SetUnlockedClasses(kAllClasses) && !toldUnlockClasses_) {
             toldUnlockClasses_ = true;
             BD_CHEAT_DIAG("[cheat-diag] unlock_classes: slot {} 0x{:X} -> 0x{:X}",
                     c.SlotId(), had, kAllClasses);
-          }
-        }
-        if (statBonus_ > 0) {
-          for (u32 b = 0; b < kPermanentBonusCount; ++b) {
-            const auto which = static_cast<PermanentBonus>(b);
-            if (c.PermanentBonus(which) < bonus) {
-              const u32 had = c.PermanentBonus(which);
-              if (c.SetPermanentBonus(which, bonus) && !toldStatBonus_) {
-                toldStatBonus_ = true;
-                BD_CHEAT_DIAG("[cheat-diag] stat_bonus: slot {} bonus[{}] {} -> {}",
-                        c.SlotId(), b, had, bonus);
-              }
-            }
           }
         }
       }
@@ -739,6 +728,10 @@ void Cheats::Apply() {
       for (size_t s = 0; s < slots; ++s) {
         const auto it = inv.At(s);
         if (it.id == 0 || it.count >= kItemStackMax)
+          continue;
+        // Key items are left alone: story checks can expect exactly one, and
+        // nothing about them is spent by use anyway.
+        if (CategoryOf(it.id) == ItemCategory::kValuable)
           continue;
         const u32 had = it.count;
         if (inv.SetAt(s, it.id, kItemStackMax) && !toldInfiniteItems_) {
@@ -833,6 +826,40 @@ void Cheats::FillInventory(ItemCategory only) {
           "slot(s) left{}",
           static_cast<u32>(only), added, had,
           freeSlots.size() - next, full ? " [FULL: no free slots]" : "");
+}
+
+Cheats::BonusLoan Cheats::LendStatBonus(u32 charaEA) {
+  BonusLoan loan;
+  if (statBonus_ <= 0 || !charaEA)
+    return loan;
+  Player c(charaEA);
+  if (!c)
+    return loan;
+  const u32 bonus = static_cast<u32>(statBonus_);
+  loan.charaEA = charaEA;
+  for (u32 b = 0; b < kPermanentBonusCount; ++b) {
+    const auto which = static_cast<PermanentBonus>(b);
+    loan.saved[b] = c.PermanentBonus(which);
+    // Held at the bonus rather than added to it, as before: a slot already
+    // above it from the game's own items keeps its own value.
+    if (loan.saved[b] < bonus)
+      c.SetPermanentBonus(which, bonus);
+  }
+  if (!toldStatBonus_) {
+    toldStatBonus_ = true;
+    BD_CHEAT_DIAG("[cheat-diag] stat_bonus: lent +{} to chara 0x{:08X} for one "
+                  "recompute",
+                  bonus, charaEA);
+  }
+  return loan;
+}
+
+void Cheats::ReturnStatBonus(const BonusLoan &loan) {
+  if (!loan.charaEA)
+    return;
+  Player c(loan.charaEA);
+  for (u32 b = 0; b < kPermanentBonusCount; ++b)
+    c.SetPermanentBonus(static_cast<PermanentBonus>(b), loan.saved[b]);
 }
 
 void Cheats::ScaleBattleParams(u32 paramsEA) {

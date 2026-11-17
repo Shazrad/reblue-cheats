@@ -138,6 +138,18 @@ public:
   // every field of that block, so scaling here never compounds across calls.
   void ScaleBattleParams(u32 paramsEA);
 
+  // The stat bonus is lent to one recompute rather than written into the
+  // save: LendStatBonus raises the chara's permanent bonus slots so the
+  // guest's own formula and caps apply it, and ReturnStatBonus puts the saved
+  // values back once Player_CalcBattleParams returns. Turning the cheat off
+  // therefore leaves the save as it was, and the next recompute drops it.
+  struct BonusLoan {
+    u32 charaEA = 0;
+    u32 saved[kPermanentBonusCount] = {};
+  };
+  BonusLoan LendStatBonus(u32 charaEA);
+  void ReturnStatBonus(const BonusLoan &loan);
+
 private:
   Cheats() = default;
 
