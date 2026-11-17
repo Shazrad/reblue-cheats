@@ -266,7 +266,7 @@ constexpr u32 kSettleSteps = 60;
 // Multipliers are offered as a short menu, but a console write can put
 // anything in the cvar, so both ends are held to something survivable.
 constexpr i32 kMultMin = 1;
-constexpr i32 kMultMax = 99;
+constexpr i32 kMultMax = 100;
 constexpr i32 kStatBonusMax = 99999;
 constexpr i32 kBattleSpeedMax = 4;
 

@@ -111,8 +111,8 @@ Multipliers and the stat bonus take effect from the next battle or equipment cha
 
 **Progression**
 
-- EXP per Fight: Off / 2x / 3x / 5x. Levels arrive on the battle that earned them, including several at once
-- SP per Fight: Off / 2x / 3x / 5x. Class ranks may not catch up until the following battle
+- EXP per Fight: Off / 10x / 50x / 100x. Levels arrive on the battle that earned them, including several at once
+- SP per Fight: Off / 10x / 50x / 100x. Class ranks may not catch up until the following battle
 - Gold per Fight: Off / 2x / 3x / 5x
 - Medals per Fight: Off / 2x / 3x / 5x, for the ruins-only currency
 - Infinite Gold: held at 99,999,999

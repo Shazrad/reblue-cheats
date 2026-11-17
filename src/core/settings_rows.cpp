@@ -525,6 +525,12 @@ constexpr SettingOption kLevelUp[] = {
     {.text = "+1", .num = 1},
     {.text = "+10", .num = 10},
     {.text = "Max", .num = engine::Cheats::kLevelUpMax, .key = "opt.max"}};
+// EXP and SP come in small numbers early on, so their steps are big ones.
+constexpr SettingOption kProgressMult[] = {
+    {.text = "Off", .num = 1, .key = "opt.off"},
+    {.text = "10x", .num = 10},
+    {.text = "50x", .num = 50},
+    {.text = "100x", .num = 100}};
 constexpr SettingOption kStatBonus[] = {
     {.text = "Off", .num = 0, .key = "opt.off"},
     {.text = "+999", .num = 999},
@@ -627,14 +633,14 @@ constexpr SettingRow kCheatSettings[] = {
      .group = "menu.header.cheats_progress",
      .binding = {.get = [] { return static_cast<double>(engine::Cheats::Get().ExpMult()); },
                  .set = [](double v) { return engine::Cheats::Get().SetExpMult(static_cast<i32>(v)); }},
-     .options = kRewardMult,
-     .count = OptCount(kRewardMult)},
+     .options = kProgressMult,
+     .count = OptCount(kProgressMult)},
     {.label = "settings.cheats.sp_mult.label",
      .group = "menu.header.cheats_progress",
      .binding = {.get = [] { return static_cast<double>(engine::Cheats::Get().SpMult()); },
                  .set = [](double v) { return engine::Cheats::Get().SetSpMult(static_cast<i32>(v)); }},
-     .options = kRewardMult,
-     .count = OptCount(kRewardMult)},
+     .options = kProgressMult,
+     .count = OptCount(kProgressMult)},
     {.label = "settings.cheats.gold_mult.label",
      .group = "menu.header.cheats_progress",
      .binding = {.get = [] { return static_cast<double>(engine::Cheats::Get().GoldMult()); },
