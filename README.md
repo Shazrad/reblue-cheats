@@ -96,6 +96,7 @@ A full Cheats page in the config menu, reachable from the title screen or the ca
 
 **In Battle**
 
+- Battle Speed: Off / 2x / 3x / 4x. Everything in a battle runs faster (animations, timers, enemy turns) and drops back to normal as soon as the battle ends. One game tick runs per rendered frame at most, so Nx needs at least 30×N fps
 - Invincibility: the party is topped back up continuously, so ordinary fights stop being a threat. A single hit big enough to kill from full HP will still land, and anyone already knocked out stays down
 - Infinite MP: cast freely; MP refills as fast as you spend it
 - Status Immunity: poison, sleep, petrify and the rest simply stop landing, and anything already on your party is cleared
@@ -117,9 +118,12 @@ Multipliers and the stat bonus take effect from the next battle or equipment cha
 - Infinite Gold: held at 99,999,999
 - Infinite Medals: held at 9,999
 - Unlock All Classes: all nine jobs open on every party member, reserves included
+- Raise Party Level: choose +1 / +10 / Max, then confirm. Every party member levels up through the game's own level-up, stat gains included
+- Raise Class Ranks: choose +1 / +10 / Max, then confirm. Every unlocked class of every party member ranks up through the game's own rank-up
 
 **Items**
 
+- Item Spawner: a window with a category dropdown, name search and item list. Pick any item, choose a quantity (1-99) and Give. Use mouse and keyboard there; Esc closes it
 - Give All Items: one of everything the game defines, in a single press
 - Nine targeted grants when you want less than everything: Heal (27), Usable (51), Spellbooks (72), Arm (35), Finger (30), Ear (29), Neck (30), Chest (36) and Valuables (62)
 - Infinite Items: every stack you carry stays full, so nothing is spent by using or selling it. Key items (Valuables) are left alone so story checks still see the count they expect
