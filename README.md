@@ -183,7 +183,35 @@ cmake --build --preset win-amd64-release
 
 Presets cover `win-amd64`, `win-vk`, `linux-amd64`, `linux-arm64`, `mac-amd64`, and `mac-arm64`, each in Debug, Release, and RelWithDebInfo. A `win-amd64` preset builds both the DX12 executable (`reblue.exe`) and the Vulkan one (`reblue_vk.exe`), and a `win-vk` one builds the Vulkan executable alone. As with running the game, building requires the files from your own copy of Blue Dragon.
 
+### Preparing `assets/`
+
+The build needs two things from your installed game in `assets/`: `default.xex`, and the game's 152 Xenos shaders (`.vso`/`.pso`). The shaders are stored zlib-compressed in `pack/!necessity.ipk`, and the build compiles them into the executable. If they are missing, the build still succeeds but the game renders a black screen, and the log fills with `Shader cache miss`.
+
+```sh
+cp <install_root>/game/default.xex assets/
+python3 tools/extract_shaders.py "<install_root>/game/pack/!necessity.ipk" assets
+```
+
+On Linux, `<install_root>` is usually `~/.config/reblue`. Then configure with the SDK on the prefix path, run codegen once, then reconfigure and build:
+
+```sh
+cmake --preset linux-amd64-release -DCMAKE_PREFIX_PATH=/path/to/rexglue-sdk/linux-amd64
+cmake --build --preset linux-amd64-release --target reblue_codegen
+cmake --preset linux-amd64-release -DCMAKE_PREFIX_PATH=/path/to/rexglue-sdk/linux-amd64
+cmake --build --preset linux-amd64-release
+```
+
 ## Credits
+
+### Cheats
+
+This is an unofficial build of re:Blue with an in-game Cheats page. Please report problems with it here, not to the re:Blue team.
+
+- **[oshata](https://github.com/oshata/reblue-cheats)** wrote the original Cheats page this build is based on.
+- **HimoShifu** made the Blue Dragon Cheat Engine table that documented the money, medal and inventory layout.
+- Everything else is the work of the re:Blue team and contributors listed below.
+
+### re:Blue
 
 Huge thanks to everyone who has put time into this. re:Blue would not be where it is without you.
 
