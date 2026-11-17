@@ -56,6 +56,7 @@ private:
   u32 selected_ = 0; // item id, 0 = none
   int quantity_ = 1;
   std::string lastGiven_;
+  std::vector<u32> listed_; // ids the list currently shows
 };
 
 } // namespace bd::ui

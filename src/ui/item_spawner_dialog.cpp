@@ -152,6 +152,14 @@ void ItemSpawnerDialog::OnDraw(ImGuiIO &) {
       ImGui::TextDisabled("%s", T("item_spawner.none"));
   }
   ImGui::EndChild();
+  listed_.clear();
+  for (const auto &e : entries_) {
+    if (category_ != 0 && static_cast<int>(e.category) != category_)
+      continue;
+    if (!needle.empty() && e.lowerName.find(needle) == std::string::npos)
+      continue;
+    listed_.push_back(e.id);
+  }
 
   // Quantity: typed, or one of the usual amounts.
   ImGui::TextUnformatted(T("item_spawner.quantity"));
@@ -174,6 +182,16 @@ void ItemSpawnerDialog::OnDraw(ImGuiIO &) {
   if (ImGui::Button(T("item_spawner.give"), ImVec2(160, 0)) && pick) {
     engine::Cheats::Get().QueueGive(pick->id, static_cast<u32>(quantity_));
     lastGiven_ = fmt::format("{} x{}", pick->name, quantity_);
+  }
+  ImGui::EndDisabled();
+  // Everything the category and search currently show, at the chosen
+  // quantity: "All categories" with an empty search is every item.
+  ImGui::SameLine();
+  ImGui::BeginDisabled(listed_.empty() || !ready);
+  if (ImGui::Button(T("item_spawner.give_all"), ImVec2(220, 0))) {
+    for (u32 id : listed_)
+      engine::Cheats::Get().QueueGive(id, static_cast<u32>(quantity_));
+    lastGiven_ = fmt::format("{} x{}", listed_.size(), quantity_);
   }
   ImGui::EndDisabled();
   ImGui::SameLine();

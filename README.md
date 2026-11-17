@@ -123,12 +123,10 @@ Multipliers and the stat bonus take effect from the next battle or equipment cha
 
 **Items**
 
-- Item Spawner: a window with a category dropdown, name search and item list. Pick any item, choose a quantity (1-99) and Give. Use mouse and keyboard there; Esc closes it
-- Give All Items: one of everything the game defines, in a single press
-- Nine targeted grants when you want less than everything: Heal (27), Usable (51), Spellbooks (72), Arm (35), Finger (30), Ear (29), Neck (30), Chest (36) and Valuables (62)
+- Item Spawner: a window with a category dropdown (Heal, Usable, Spellbooks, Arm, Finger, Ear, Neck, Chest, Valuables), name search and item list showing how many you hold. Pick any item, choose a quantity (1-99) and Give, or double-click it. Give All Listed adds everything the list currently shows, so "All categories" with no search gives one of every item. Use mouse and keyboard there; Esc closes it
 - Infinite Items: every stack you carry stays full, so nothing is spent by using or selling it. Key items (Valuables) are left alone so story checks still see the count they expect
 
-Grants add to what you already hold rather than replacing it, hand you one of each, and skip the unused entries that show up in game as Worthless Junk.
+Gives add to what you already hold rather than replacing it, stop at 99 per stack, and skip the unused entries that show up in game as Worthless Junk.
 
 **Encyclopedia**
 
