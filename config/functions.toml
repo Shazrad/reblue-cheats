@@ -1170,6 +1170,8 @@
 0x823B2A08 = { name = "Player_CalcBattleParams" }
 0x823B3CD0 = { name = "Player_AddExp" }
 0x823B3DD8 = { name = "Player_ExpForLevel" }
+0x823B4528 = { name = "Player_AddClassSP" }
+0x823B4600 = { name = "Class_SPForRank" }
 0x823B3618 = { name = "Player_ApplyPassiveEffect" }
 0x823B4E40 = { name = "PlyTask__Draw", size = 0x1B8 }
 0x823B6528 = { name = "AnimeData_method_6528", size = 0x218 }

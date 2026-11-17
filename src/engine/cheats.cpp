@@ -39,6 +39,13 @@ REX_IMPORT(__imp__Player_AddExp, GuestAddExp, u32(u32, u32));
 // max the level table names. Player_AddExp's own level-up loop asks it.
 REX_IMPORT(__imp__Player_ExpForLevel, GuestExpForLevel, u32(u32, u32));
 
+// The class counterparts. 0x823B4528 (chara, class, sp) adds SP to one class
+// record and walks its own rank-up loop, applying each rank's stats, until the
+// SP is spent or the max rank is reached. 0x823B4600 (class, rank) answers the
+// cumulative SP that rank needs, 0 past the max.
+REX_IMPORT(__imp__Player_AddClassSP, GuestAddClassSP, u32(u32, u32, u32));
+REX_IMPORT(__imp__Class_SPForRank, GuestSPForRank, u32(u32, u32));
+
 REXCVAR_DECLARE(bool, bd_cheat_diag);
 REXCVAR_DECLARE(bool, bd_cheat_invincible);
 REXCVAR_DECLARE(bool, bd_cheat_infinite_mp);
@@ -48,6 +55,7 @@ REXCVAR_DECLARE(bool, bd_cheat_unlock_classes);
 REXCVAR_DECLARE(bool, bd_cheat_one_hit_kill);
 REXCVAR_DECLARE(i32, bd_cheat_battle_speed);
 REXCVAR_DECLARE(i32, bd_cheat_level_up);
+REXCVAR_DECLARE(i32, bd_cheat_class_rank_up);
 REXCVAR_DECLARE(i32, bd_cheat_attack_mult);
 REXCVAR_DECLARE(i32, bd_cheat_magic_attack_mult);
 REXCVAR_DECLARE(i32, bd_cheat_magic_defence_mult);
@@ -108,6 +116,11 @@ REXCVAR_DEFINE_INT32(bd_cheat_level_up, 1, kCvarGroup,
                      "How many levels the Raise Party Level action adds to "
                      "every roster member (999 = max level). Choosing it does "
                      "nothing by itself; the confirmed action row raises.");
+
+REXCVAR_DEFINE_INT32(bd_cheat_class_rank_up, 1, kCvarGroup,
+                     "How many ranks the Raise Class Ranks action adds to every "
+                     "unlocked class of every roster member (999 = max rank). "
+                     "Choosing it does nothing by itself.");
 
 REXCVAR_DEFINE_INT32(bd_cheat_attack_mult, 1, kCvarGroup,
                      "Multiply physical attack as the guest finishes each stat "
@@ -261,6 +274,10 @@ constexpr i32 kBattleSpeedMax = 4;
 // level. Both Player_AddExp and Player_ExpForLevel load it from here.
 constexpr u32 kLevelTablePtrEA = 0x82DC9B44;
 
+// The max class rank, as a plain word: Player_AddClassSP and Class_SPForRank
+// both compare against it.
+constexpr u32 kMaxClassRankEA = 0x8276FCB4;
+
 // The five derived stats of the battle-params block this file scales, at the
 // offsets Player_CalcBattleParams writes them into it. chara.cpp carries the
 // full layout; only these fields are named here so offsetof stays honest
@@ -353,6 +370,25 @@ void Cheats::AdoptLevelUp() {
 }
 bool Cheats::SetLevelUp(i32 v) {
   return rex::cvar::SetFlagByName("bd_cheat_level_up", FormatCvar(v));
+}
+void Cheats::AdoptClassRankUp() {
+  classRankUp_ = std::clamp(REXCVAR_GET(bd_cheat_class_rank_up), 1, kLevelUpMax);
+}
+bool Cheats::SetClassRankUp(i32 v) {
+  return rex::cvar::SetFlagByName("bd_cheat_class_rank_up", FormatCvar(v));
+}
+bool Cheats::Pickable(u32 id) {
+  // The same test the category grants use: a record exists and the sheet
+  // classifies it, which leaves out the unused "Worthless Junk" entries.
+  return id >= 1 && id <= kItemCategoryMaxId &&
+         CategoryOf(id) != ItemCategory::kNone &&
+         GameTables::Get().PhenomeRecord(id) != 0;
+}
+void Cheats::QueueGive(u32 itemId, u32 count) {
+  if (!Pickable(itemId) || count == 0)
+    return;
+  std::lock_guard lock(giveMutex_);
+  pendingGives_.emplace_back(itemId, count);
 }
 void Cheats::AdoptAttackMult() {
   attackMult_ = std::clamp(REXCVAR_GET(bd_cheat_attack_mult), kMultMin, kMultMax);
@@ -634,6 +670,22 @@ void Cheats::Apply() {
     RaiseLevels(levels);
   }
 
+  {
+    std::vector<std::pair<u32, u32>> gives;
+    {
+      std::lock_guard lock(giveMutex_);
+      gives.swap(pendingGives_);
+    }
+    for (const auto &[id, count] : gives)
+      GiveItem(id, count);
+  }
+
+  if (pendingClassRankUp_) {
+    const i32 ranks = pendingClassRankUp_;
+    pendingClassRankUp_ = 0;
+    RaiseClassRanks(ranks);
+  }
+
   if (pendingGiveAll_) {
     pendingGiveAll_ = false;
     FillInventory(ItemCategory::kNone);
@@ -869,11 +921,88 @@ void Cheats::RaiseLevels(i32 levels) {
   }
 }
 
+void Cheats::RaiseClassRanks(i32 ranks) {
+  const auto &g = Game::Get();
+  const auto roster = g.FieldPlayerEntity().Roster();
+  BD_CHEAT_DIAG("[cheat-diag] class_rank_up: requested +{}", ranks);
+  if (!roster || ranks <= 0)
+    return;
+  const u32 maxRank = mem::try_load<u32>(kMaxClassRankEA);
+  if (maxRank == 0 || maxRank > 255) {
+    BD_CHEAT_DIAG("[cheat-diag] class_rank_up: max rank reads {}, skipped",
+                  maxRank);
+    return;
+  }
+  const size_t n = roster.Size();
+  for (size_t i = 0; i < n; ++i) {
+    Player c = roster.At(i).Chara();
+    if (!c)
+      continue;
+    for (u32 k = 0; k < kCharaClassCount; ++k) {
+      const auto cls = static_cast<CharaClass>(k);
+      // A locked class is left for the game (or Unlock All Classes) to open.
+      if (!c.IsClassUnlocked(cls))
+        continue;
+      const u32 from = c.ClassRank(cls);
+      if (from >= maxRank)
+        continue;
+      const u32 target =
+          ranks >= kLevelUpMax
+              ? maxRank
+              : std::min<u32>(maxRank, from + static_cast<u32>(ranks));
+      u32 need = 0;
+      {
+        rex::ppc::stack_guard guard;
+        need = GuestSPForRank(k, target);
+      }
+      const u32 have = c.ClassSP(cls);
+      if (need <= have)
+        continue;
+      {
+        rex::ppc::stack_guard guard;
+        GuestAddClassSP(c.Address(), k, need - have);
+      }
+      BD_CHEAT_DIAG("[cheat-diag] class_rank_up: slot {} class {} rank {} -> {} "
+                    "(sp {} -> {})",
+                    c.SlotId(), k, from, c.ClassRank(cls), have, c.ClassSP(cls));
+    }
+  }
+}
+
 // ---- derived stats ----
 
 // Walks the id space rather than a list: the record table is the only account
 // of which ids exist, and ItemRecord answers zero for the gaps. Stops at the
 // last slot, so a table larger than the inventory fills it and no more.
+void Cheats::GiveItem(u32 itemId, u32 count) {
+  auto inv = Game::Get().ItemSaveData();
+  if (!inv || !Pickable(itemId))
+    return;
+  // Onto the stack already holding it, as the game credits a pickup;
+  // otherwise into the first empty slot.
+  const size_t slots = inv.SlotCount();
+  size_t target = slots;
+  for (size_t s = 0; s < slots; ++s) {
+    const auto held = inv.At(s);
+    if (held.id == itemId) {
+      target = s;
+      break;
+    }
+    if (held.id == 0 && target == slots)
+      target = s;
+  }
+  if (target == slots) {
+    BD_CHEAT_DIAG("[cheat-diag] give_item: {} x{}: bag full", itemId, count);
+    return;
+  }
+  const auto held = inv.At(target);
+  const u32 had = held.id == itemId ? held.count : 0;
+  const u32 want = std::min<u32>(had + count, kItemStackMax);
+  inv.SetAt(target, itemId, want);
+  BD_CHEAT_DIAG("[cheat-diag] give_item: {} '{}' slot {} {} -> {}", itemId,
+                GameTables::Get().PhenomeName(itemId), target, had, want);
+}
+
 void Cheats::FillInventory(ItemCategory only) {
   auto inv = Game::Get().ItemSaveData();
   if (!inv)

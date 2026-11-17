@@ -918,6 +918,8 @@ void ReblueApp::InstallOverlayDrawHook() {
       BD_CPU_ZONE("OverlayDraw");
       MaybeShowUpdatePrompt();
       UpdateCheckStatus();
+      if (bd::engine::Cheats::Get().TakeItemSpawnerRequest())
+        new bd::ui::ItemSpawnerDialog(imgui_drawer());
       bd::gpu::ReblueUIDrawContext ctx(w, h, cmd, fb);
       imgui_drawer()->Draw(ctx);
     });
@@ -928,6 +930,8 @@ bool ReblueApp::PendingOverlayWork() const {
   using Sync = bd::platform::ContentSync;
   using Updates = bd::platform::Updates;
 
+  if (bd::engine::Cheats::Get().ItemSpawnerRequested())
+    return true;
   auto &updates = Updates::Get();
   if (updates.State() == Updates::Stage::kChecking)
     return true;

@@ -25,6 +25,7 @@ namespace {
 std::atomic<bool> g_menuOwnsInput{false};
 std::atomic<bool> g_padSawInput{false};
 std::atomic<int> g_hostPointerClaims{0};
+std::atomic<int> g_hostInputClaims{0};
 
 } // namespace
 
@@ -44,6 +45,18 @@ void SetMenuOwnsInput(bool owns) {
 
 bool HostOverlayOwnsPointer() {
   return g_hostPointerClaims.load(std::memory_order_relaxed) > 0;
+}
+
+bool HostOverlayOwnsInput() {
+  return g_hostInputClaims.load(std::memory_order_relaxed) > 0;
+}
+
+HostInputClaim::HostInputClaim() {
+  g_hostInputClaims.fetch_add(1, std::memory_order_relaxed);
+}
+
+HostInputClaim::~HostInputClaim() {
+  g_hostInputClaims.fetch_sub(1, std::memory_order_relaxed);
 }
 
 HostPointerClaim::HostPointerClaim() {

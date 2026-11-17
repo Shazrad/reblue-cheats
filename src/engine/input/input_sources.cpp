@@ -59,7 +59,7 @@ bool IsMouse(const Source &source) {
 }
 
 bool MouseTaken(const Source &source) {
-  return IsMouse(source) && HostOverlayOwnsPointer();
+  return HostOverlayOwnsInput() || (IsMouse(source) && HostOverlayOwnsPointer());
 }
 
 int PadAxisBase(const Source &source) {

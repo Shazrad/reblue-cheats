@@ -309,7 +309,11 @@ void ConfigMenu::HandleSettings() {
         Transition(State::KEYBINDS);
       else if (SettingsRowAction(page, row) == SettingAction::ResetCheats)
         Transition(State::CONFIRM_RESET_CHEATS);
-      else if (SettingsRowAction(page, row) == SettingAction::RaiseLevel) {
+      else if (SettingsRowAction(page, row) == SettingAction::ItemSpawner) {
+        Cheats::Get().RequestItemSpawner();
+        sfx::Play(sfx::kOpen);
+      } else if (SettingsRowAction(page, row) == SettingAction::RaiseLevel ||
+               SettingsRowAction(page, row) == SettingAction::RaiseClassRank) {
         pending_cheat_action_ = SettingsRowAction(page, row);
         Transition(State::CONFIRM_CHEAT_ACTION);
       }
@@ -808,6 +812,10 @@ void ConfigMenu::HandleConfirmCheatAction() {
     // where the party is known to be in a settled state.
     Cheats::Get().QueueLevelUp();
     BD_DEBUG("[config] party level raise queued");
+  } else if (confirmed &&
+             pending_cheat_action_ == SettingAction::RaiseClassRank) {
+    Cheats::Get().QueueClassRankUp();
+    BD_DEBUG("[config] class rank raise queued");
   } else {
     BD_DEBUG("[config] cheat action declined");
   }

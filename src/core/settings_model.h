@@ -41,9 +41,17 @@ enum class RowUi : int {
   Action,
 };
 
-// RaiseLevel is a cheat action that fires once after a confirmation popup,
-// using the amount its neighbouring choice row holds.
-enum class SettingAction { None, Keybinds, ResetCheats, RaiseLevel };
+// RaiseLevel and RaiseClassRank are cheat actions that fire once after a confirmation popup,
+// each using the amount its neighbouring choice row holds.
+// ItemSpawner opens the item spawner overlay at once, with no popup.
+enum class SettingAction {
+  None,
+  Keybinds,
+  ResetCheats,
+  RaiseLevel,
+  RaiseClassRank,
+  ItemSpawner,
+};
 
 const char *SettingsPageLabel(SettingsPage page);
 

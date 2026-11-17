@@ -10,5 +10,6 @@
 #include "ui/screen_fade.h"
 #include "ui/settings.h"
 #include "ui/theme.h"
+#include "ui/item_spawner_dialog.h"
 #include "ui/update_prompt_dialog.h"
 #include "ui/update_status.h"

@@ -8,6 +8,9 @@
  */
 #pragma once
 
+#include <atomic>
+#include <mutex>
+#include <utility>
 #include <vector>
 
 #include <rex/types.h>
@@ -105,6 +108,25 @@ public:
   bool SetLevelUp(i32 v);
   void QueueLevelUp() { pendingLevelUp_ = levelUp_; }
 
+  // The same pair for class ranks: how many ranks Raise Class Ranks adds to
+  // every unlocked class of every roster member (kLevelUpMax for max rank),
+  // through the guest's own class SP award and its rank-up loop.
+  i32 ClassRankUp() const { return classRankUp_; }
+  bool SetClassRankUp(i32 v);
+  void QueueClassRankUp() { pendingClassRankUp_ = classRankUp_; }
+
+  // Item spawner. The overlay runs on the UI thread, so it only queues: the
+  // gives land from Apply, on the game step, like every other write here.
+  void QueueGive(u32 itemId, u32 count);
+  // Whether an id is one the spawner offers: a record exists and the
+  // category sheet classifies it, which leaves out "Worthless Junk".
+  static bool Pickable(u32 id);
+  // The config menu's row asks for the window; the overlay hook, on the UI
+  // thread, takes the request and opens it.
+  void RequestItemSpawner() { spawnerRequested_.store(true); }
+  bool ItemSpawnerRequested() const { return spawnerRequested_.load(); }
+  bool TakeItemSpawnerRequest() { return spawnerRequested_.exchange(false); }
+
   // 1 leaves the derived stat alone. Applied where the guest finishes the
   // recompute, so a change lands on the next recalc rather than immediately.
   // One per stat: the physical and magic sides move independently so each can
@@ -174,6 +196,9 @@ private:
   void AdoptBattleSpeed();
   void AdoptLevelUp();
   void RaiseLevels(i32 levels);
+  void AdoptClassRankUp();
+  void RaiseClassRanks(i32 ranks);
+  void GiveItem(u32 itemId, u32 count);
   void AdoptAttackMult();
   void AdoptMagicAttackMult();
   void AdoptDefenceMult();
@@ -208,6 +233,7 @@ private:
       {"bd_cheat_one_hit_kill", &Cheats::AdoptOneHitKill},
       {"bd_cheat_battle_speed", &Cheats::AdoptBattleSpeed},
       {"bd_cheat_level_up", &Cheats::AdoptLevelUp},
+      {"bd_cheat_class_rank_up", &Cheats::AdoptClassRankUp},
       {"bd_cheat_attack_mult", &Cheats::AdoptAttackMult},
       {"bd_cheat_magic_attack_mult", &Cheats::AdoptMagicAttackMult},
       {"bd_cheat_defence_mult", &Cheats::AdoptDefenceMult},
@@ -254,6 +280,11 @@ private:
   i32 battleSpeed_ = 1;
   i32 levelUp_ = 0;
   i32 pendingLevelUp_ = 0;
+  i32 classRankUp_ = 1;
+  i32 pendingClassRankUp_ = 0;
+  std::mutex giveMutex_;
+  std::vector<std::pair<u32, u32>> pendingGives_; // (item id, count)
+  std::atomic<bool> spawnerRequested_{false};
   i32 attackMult_ = 1;
   i32 magicAttackMult_ = 1;
   i32 defenceMult_ = 1;

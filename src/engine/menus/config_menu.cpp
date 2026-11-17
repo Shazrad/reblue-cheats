@@ -728,7 +728,11 @@ void ConfigMenu::Transition(State next) {
     break;
 
   case State::CONFIRM_CHEAT_ACTION:
-    confirm_popup_.Create(task_, i18n::Text("menu.confirm.raise_level").c_str());
+    confirm_popup_.Create(
+        task_, i18n::Text(pending_cheat_action_ == SettingAction::RaiseClassRank
+                              ? "menu.confirm.raise_class_rank"
+                              : "menu.confirm.raise_level")
+                   .c_str());
     ActivateOnly(nullptr);
     BD_DEBUG("[config] state -> CONFIRM_CHEAT_ACTION");
     break;

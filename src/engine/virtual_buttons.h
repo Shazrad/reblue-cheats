@@ -20,6 +20,18 @@ void SetMenuOwnsInput(bool owns);
 // mouse onto whatever engine list happens to be behind the window.
 bool HostOverlayOwnsPointer();
 
+// Held by a host overlay that takes typed text (the item spawner's search
+// box): while any is alive, no key, mouse or pad source reaches a game bind,
+// so typing does not also drive the menu or the field behind the window.
+bool HostOverlayOwnsInput();
+class HostInputClaim {
+public:
+  HostInputClaim();
+  ~HostInputClaim();
+  HostInputClaim(const HostInputClaim &) = delete;
+  HostInputClaim &operator=(const HostInputClaim &) = delete;
+};
+
 // Held for as long as a dialog needs the system pointer. An overlay that only
 // draws must not take one, or the game cursor never comes back.
 class HostPointerClaim {

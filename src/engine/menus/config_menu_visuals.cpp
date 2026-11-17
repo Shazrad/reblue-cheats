@@ -212,8 +212,12 @@ void ConfigMenu::UpdateFooter() {
                            : (SettingsRowAction(settings_page_, cursor) ==
                                   SettingAction::ResetCheats
                                  ? "footer.reset"
-                                 : SettingsRowAction(settings_page_, cursor) ==
-                                           SettingAction::RaiseLevel
+                                 : (SettingsRowAction(settings_page_, cursor) ==
+                                            SettingAction::RaiseLevel ||
+                                        SettingsRowAction(settings_page_, cursor) ==
+                                            SettingAction::ItemSpawner ||
+                                        SettingsRowAction(settings_page_, cursor) ==
+                                            SettingAction::RaiseClassRank)
                                        ? "footer.apply"
                                        : "footer.configure");
     SetFooter({.a = aKey, .b = "footer.back"});
@@ -386,7 +390,10 @@ void ConfigMenu::RefreshSettingsVisuals() {
       // the cheat reset asks to be pressed.
       const auto action = SettingsRowAction(page, i);
       const char *label = action == SettingAction::ResetCheats ? "footer.reset"
-                          : action == SettingAction::RaiseLevel ? "footer.apply"
+                          : (action == SettingAction::RaiseLevel ||
+                             action == SettingAction::ItemSpawner ||
+                             action == SettingAction::RaiseClassRank)
+                              ? "footer.apply"
                                                                 : "footer.configure";
       vb.SetText(opt.name, i18n::Text(label));
       vb.SetString(opt.wnd, "BTN01_OF");
