@@ -21,6 +21,11 @@ constexpr double kTick = 1.0 / 30.0;
 constexpr double kMaxReportedDelta = 1.0 / 15.0;
 constexpr double kMaxBacklog = kTick * 4.0;
 
+// Logic ticks per base tick. 1 is the game's own 30Hz; the battle speed cheat
+// raises it while a battle is up. One tick still runs per rendered frame at
+// most, so the speed actually reached is capped by the frame rate.
+double g_logicSpeed = 1.0;
+
 using Clock = std::chrono::steady_clock;
 
 double g_lastTime = 0.0;
@@ -92,11 +97,12 @@ void Advance() {
     g_alpha = 0.0f;
     g_accum = 0.0;
   } else {
-    g_accum = std::min(g_accum + dt, kMaxBacklog);
-    g_tickDue = g_accum >= kTick;
+    const double tick = kTick / g_logicSpeed;
+    g_accum = std::min(g_accum + dt, kMaxBacklog / g_logicSpeed);
+    g_tickDue = g_accum >= tick;
     if (g_tickDue)
-      g_accum -= kTick;
-    g_alpha = static_cast<float>(std::clamp(g_accum / kTick, 0.0, 0.9999));
+      g_accum -= tick;
+    g_alpha = static_cast<float>(std::clamp(g_accum / tick, 0.0, 0.9999));
   }
 
   if (g_tickDue) {
@@ -146,6 +152,8 @@ float Alpha() {
 }
 u64 TickCount() { return t_renderThread ? g_render.tick : g_tickCount; }
 double TicksPerSecond() { return g_tps; }
+void SetLogicSpeed(double mult) { g_logicSpeed = std::clamp(mult, 1.0, 8.0); }
+double LogicSpeed() { return g_logicSpeed; }
 double FrameTime() { return t_renderThread ? g_render.time : g_frameTime; }
 double FrameDelta() { return t_renderThread ? g_render.delta : g_lastDelta; }
 

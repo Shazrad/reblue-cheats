@@ -516,6 +516,16 @@ constexpr SettingOption kRewardMult[] = {
     {.text = "2x", .num = 2},
     {.text = "3x", .num = 3},
     {.text = "5x", .num = 5}};
+constexpr SettingOption kBattleSpeed[] = {
+    {.text = "Off", .num = 1, .key = "opt.off"},
+    {.text = "2x", .num = 2},
+    {.text = "3x", .num = 3},
+    {.text = "4x", .num = 4}};
+constexpr SettingOption kLevelUp[] = {
+    {.text = "Off", .num = 0, .key = "opt.off"},
+    {.text = "+1", .num = 1},
+    {.text = "+10", .num = 10},
+    {.text = "Max", .num = engine::Cheats::kLevelUpMax, .key = "opt.max"}};
 constexpr SettingOption kStatBonus[] = {
     {.text = "Off", .num = 0, .key = "opt.off"},
     {.text = "+999", .num = 999},
@@ -524,6 +534,12 @@ constexpr SettingOption kStatBonus[] = {
 // Every row here writes through the engine layer rather than at guest memory
 // directly, so a pin is a value the game could have stored itself.
 constexpr SettingRow kCheatSettings[] = {
+    {.label = "settings.cheats.battle_speed.label",
+     .group = "menu.header.cheats_battle",
+     .binding = {.get = [] { return static_cast<double>(engine::Cheats::Get().BattleSpeed()); },
+                 .set = [](double v) { return engine::Cheats::Get().SetBattleSpeed(static_cast<i32>(v)); }},
+     .options = kBattleSpeed,
+     .count = OptCount(kBattleSpeed)},
     {.label = "settings.cheats.invincible.label",
      .group = "menu.header.cheats_battle",
      .binding = {.get = [] { return engine::Cheats::Get().Invincible() ? 1.0 : 0.0; },
@@ -584,6 +600,12 @@ constexpr SettingRow kCheatSettings[] = {
                  .set = [](double v) { return engine::Cheats::Get().SetStatBonus(static_cast<i32>(v)); }},
      .options = kStatBonus,
      .count = OptCount(kStatBonus)},
+    {.label = "settings.cheats.level_up.label",
+     .group = "menu.header.cheats_progress",
+     .binding = {.get = [] { return static_cast<double>(engine::Cheats::Get().LevelUp()); },
+                 .set = [](double v) { return engine::Cheats::Get().SetLevelUp(static_cast<i32>(v)); }},
+     .options = kLevelUp,
+     .count = OptCount(kLevelUp)},
     {.label = "settings.cheats.exp_mult.label",
      .group = "menu.header.cheats_progress",
      .binding = {.get = [] { return static_cast<double>(engine::Cheats::Get().ExpMult()); },
@@ -709,7 +731,7 @@ constexpr SettingRow kCheatSettings[] = {
     // A plain action row: A or a click asks for confirmation, then every cheat
     // cvar goes back to its default (toggles off, multipliers at 1) and the
     // change is saved with the config. Effects already written into the save --
-    // stat bonuses, unlocked classes -- stay; the description says so.
+    // unlocked classes, granted items -- stay; the description says so.
     {.label = "settings.cheats.reset_all.label",
      .group = "menu.header.cheats_general",
      .desc = "settings.cheats.reset_all.desc",

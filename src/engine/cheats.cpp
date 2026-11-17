@@ -21,6 +21,7 @@
 #include "engine/chara.h"
 #include "engine/events.h"
 #include "engine/field_player_entity.h"
+#include "engine/frame_clock.h"
 #include "engine/game.h"
 #include "engine/item_save_data.h"
 #include "engine/achievements/achievements.h"
@@ -33,6 +34,11 @@
 // them instead of the one after, which is what a bare write leaves behind.
 REX_IMPORT(__imp__Player_AddExp, GuestAddExp, u32(u32, u32));
 
+// 0x823B3DD8: the cumulative EXP a chara needs to reach a level, with its
+// per-character adjustment applied. Answers 0 for a level below 1 or past the
+// max the level table names. Player_AddExp's own level-up loop asks it.
+REX_IMPORT(__imp__Player_ExpForLevel, GuestExpForLevel, u32(u32, u32));
+
 REXCVAR_DECLARE(bool, bd_cheat_diag);
 REXCVAR_DECLARE(bool, bd_cheat_invincible);
 REXCVAR_DECLARE(bool, bd_cheat_infinite_mp);
@@ -40,6 +46,8 @@ REXCVAR_DECLARE(bool, bd_cheat_infinite_gold);
 REXCVAR_DECLARE(bool, bd_cheat_status_immune);
 REXCVAR_DECLARE(bool, bd_cheat_unlock_classes);
 REXCVAR_DECLARE(bool, bd_cheat_one_hit_kill);
+REXCVAR_DECLARE(i32, bd_cheat_battle_speed);
+REXCVAR_DECLARE(i32, bd_cheat_level_up);
 REXCVAR_DECLARE(i32, bd_cheat_attack_mult);
 REXCVAR_DECLARE(i32, bd_cheat_magic_attack_mult);
 REXCVAR_DECLARE(i32, bd_cheat_magic_defence_mult);
@@ -90,6 +98,16 @@ REXCVAR_DEFINE_BOOL(bd_cheat_unlock_classes, false, kCvarGroup,
 REXCVAR_DEFINE_BOOL(bd_cheat_one_hit_kill, false, kCvarGroup,
                     "Hold every living enemy at 1 HP while a battle is up, so "
                     "the next hit that lands kills it.");
+
+REXCVAR_DEFINE_INT32(bd_cheat_battle_speed, 1, kCvarGroup,
+                     "Run game logic this many times faster while a battle is "
+                     "up (1-4). One logic tick runs per rendered frame at most, "
+                     "so Nx needs at least 30*N fps. 1 leaves it alone.");
+
+REXCVAR_DEFINE_INT32(bd_cheat_level_up, 0, kCvarGroup,
+                     "Raise every roster member this many levels through the "
+                     "game's own level-up path (999 = max level). Runs once, "
+                     "then clears itself.");
 
 REXCVAR_DEFINE_INT32(bd_cheat_attack_mult, 1, kCvarGroup,
                      "Multiply physical attack as the guest finishes each stat "
@@ -237,6 +255,15 @@ constexpr u32 kSettleSteps = 60;
 constexpr i32 kMultMin = 1;
 constexpr i32 kMultMax = 99;
 constexpr i32 kStatBonusMax = 99999;
+constexpr i32 kBattleSpeedMax = 4;
+
+// Bit of litGrants_ the level-up action lights while its row flashes. 29-31
+// are the achievement and give-all actions, 0-8 the category grants.
+constexpr u32 kLitLevelUp = 1u << 28;
+
+// The level table the guest's EXP functions read: its first word is the max
+// level. Both Player_AddExp and Player_ExpForLevel load it from here.
+constexpr u32 kLevelTablePtrEA = 0x82DC9B44;
 
 // The five derived stats of the battle-params block this file scales, at the
 // offsets Player_CalcBattleParams writes them into it. chara.cpp carries the
@@ -320,6 +347,20 @@ void Cheats::AdoptUnlockClasses() {
 }
 void Cheats::AdoptOneHitKill() {
   oneHitKill_ = REXCVAR_GET(bd_cheat_one_hit_kill);
+}
+void Cheats::AdoptBattleSpeed() {
+  battleSpeed_ =
+      std::clamp(REXCVAR_GET(bd_cheat_battle_speed), kMultMin, kBattleSpeedMax);
+}
+void Cheats::AdoptLevelUp() {
+  levelUp_ = std::clamp(REXCVAR_GET(bd_cheat_level_up), 0, kLevelUpMax);
+  // Mirrors the setting like the other one-shots: turning it off cancels a
+  // queued raise, and a lit bit means it already fired and is waiting to
+  // disarm, so it must not queue again.
+  pendingLevelUp_ = (levelUp_ > 0 && !(litGrants_ & kLitLevelUp)) ? levelUp_ : 0;
+}
+bool Cheats::SetLevelUp(i32 v) {
+  return rex::cvar::SetFlagByName("bd_cheat_level_up", FormatCvar(v));
 }
 void Cheats::AdoptAttackMult() {
   attackMult_ = std::clamp(REXCVAR_GET(bd_cheat_attack_mult), kMultMin, kMultMax);
@@ -449,6 +490,9 @@ bool Cheats::SetUnlockClasses(bool v) {
 bool Cheats::SetOneHitKill(bool v) {
   return rex::cvar::SetFlagByName("bd_cheat_one_hit_kill", FormatCvar(v));
 }
+bool Cheats::SetBattleSpeed(i32 v) {
+  return rex::cvar::SetFlagByName("bd_cheat_battle_speed", FormatCvar(v));
+}
 bool Cheats::SetAttackMult(i32 v) {
   return rex::cvar::SetFlagByName("bd_cheat_attack_mult", FormatCvar(v));
 }
@@ -553,8 +597,15 @@ void Cheats::Apply() {
   // A loader slot mid-state is a half-built save: the party walk cannot tell a
   // stale node from a live one there, and every accessor below would be
   // reading whatever the heap last held.
-  if (!g.IsReady() || g.IsLoading())
+  if (!g.IsReady() || g.IsLoading()) {
+    SetLogicSpeed(1.0);
     return;
+  }
+
+  // Re-decided every step from whether a battle manager answered this step,
+  // so leaving a battle any way at all -- won, fled, game over -- drops back
+  // to normal speed on the next step without relying on an edge event.
+  SetLogicSpeed(battleSpeed_ > 1 && g.BattleTask() ? double(battleSpeed_) : 1.0);
 
   // The settle window runs even with every pin off, because a reward
   // multiplier is not a pin and owes its remainder regardless. It always runs
@@ -582,6 +633,14 @@ void Cheats::Apply() {
     pendingResetAchv_ = false;
     Achievements::LockAll();
     litGrants_ |= (1u << 29);
+    litSteps_ = kGrantLitSteps;
+  }
+
+  if (pendingLevelUp_) {
+    const i32 levels = pendingLevelUp_;
+    pendingLevelUp_ = 0;
+    RaiseLevels(levels);
+    litGrants_ |= kLitLevelUp;
     litSteps_ = kGrantLitSteps;
   }
 
@@ -618,6 +677,8 @@ void Cheats::Apply() {
       SetUnlockAchievements(false);
     if (litGrants_ & (1u << 29))
       SetResetAchievements(false);
+    if (litGrants_ & kLitLevelUp)
+      SetLevelUp(0);
     // The turn-offs above re-mirror the cvars that are still on; drop any bit
     // that is lit so a row that just disarmed cannot queue itself again.
     pendingGrants_ &= ~litGrants_;
@@ -764,6 +825,59 @@ void Cheats::Apply() {
         BD_CHEAT_DIAG("[cheat-diag] infinite_gold: {} -> {}", from, kGoldMax);
       }
     }
+  }
+}
+
+// ---- levels ----
+
+void Cheats::RaiseLevels(i32 levels) {
+  const auto &g = Game::Get();
+  const auto roster = g.FieldPlayerEntity().Roster();
+  BD_CHEAT_DIAG("[cheat-diag] level_up: requested +{}", levels);
+  if (!roster || levels <= 0) {
+    BD_CHEAT_DIAG("[cheat-diag] level_up: no roster yet, skipped");
+    return;
+  }
+  const u32 tablePtr = mem::try_load<u32>(kLevelTablePtrEA);
+  const u32 maxLevel = tablePtr ? mem::try_load<u32>(tablePtr) : 0;
+  // A sane table names a max in the low hundreds at most; anything else means
+  // the pointer is not what this expects, so do nothing rather than guess.
+  if (maxLevel == 0 || maxLevel > 255) {
+    BD_CHEAT_DIAG("[cheat-diag] level_up: level table at 0x{:08X} reads max {}, "
+                  "skipped",
+                  tablePtr, maxLevel);
+    return;
+  }
+  const size_t n = roster.Size();
+  for (size_t i = 0; i < n; ++i) {
+    Player c = roster.At(i).Chara();
+    if (!c)
+      continue;
+    const u32 from = c.Level();
+    if (from >= maxLevel)
+      continue;
+    const u32 target =
+        levels >= kLevelUpMax
+            ? maxLevel
+            : std::min<u32>(maxLevel, from + static_cast<u32>(levels));
+    u32 need = 0;
+    {
+      rex::ppc::stack_guard guard;
+      need = GuestExpForLevel(c.Address(), target);
+    }
+    const u32 have = c.Exp();
+    if (need <= have) {
+      BD_CHEAT_DIAG("[cheat-diag] level_up: slot {} level {} target {} needs {} "
+                    "exp, has {}: nothing to add",
+                    c.SlotId(), from, target, need, have);
+      continue;
+    }
+    {
+      rex::ppc::stack_guard guard;
+      GuestAddExp(c.Address(), need - have);
+    }
+    BD_CHEAT_DIAG("[cheat-diag] level_up: slot {} level {} -> {} (exp {} -> {})",
+                  c.SlotId(), from, c.Level(), have, c.Exp());
   }
 }
 

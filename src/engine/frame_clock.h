@@ -25,6 +25,11 @@ u64 TickCount();
 
 double TicksPerSecond();
 
+// Multiplies the logic tick rate (1 = the game's 30Hz). Used by the battle
+// speed cheat; capped by the frame rate, since one tick runs per frame at most.
+void SetLogicSpeed(double mult);
+double LogicSpeed();
+
 double FrameTime();
 
 double FrameDelta();

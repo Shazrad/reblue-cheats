@@ -93,6 +93,17 @@ public:
   bool OneHitKill() const { return oneHitKill_; }
   bool SetOneHitKill(bool v);
 
+  // Logic speed while a battle is up: 1 (off) to 4.
+  i32 BattleSpeed() const { return battleSpeed_; }
+  bool SetBattleSpeed(i32 v);
+
+  // One-shot: raise every roster member this many levels (kLevelUpMax for
+  // the game's max level), through the guest's own level-up path. Clears
+  // itself after it fires.
+  static constexpr i32 kLevelUpMax = 999;
+  i32 LevelUp() const { return levelUp_; }
+  bool SetLevelUp(i32 v);
+
   // 1 leaves the derived stat alone. Applied where the guest finishes the
   // recompute, so a change lands on the next recalc rather than immediately.
   // One per stat: the physical and magic sides move independently so each can
@@ -159,6 +170,9 @@ private:
   void AdoptStatusImmune();
   void AdoptUnlockClasses();
   void AdoptOneHitKill();
+  void AdoptBattleSpeed();
+  void AdoptLevelUp();
+  void RaiseLevels(i32 levels);
   void AdoptAttackMult();
   void AdoptMagicAttackMult();
   void AdoptDefenceMult();
@@ -191,6 +205,8 @@ private:
       {"bd_cheat_status_immune", &Cheats::AdoptStatusImmune},
       {"bd_cheat_unlock_classes", &Cheats::AdoptUnlockClasses},
       {"bd_cheat_one_hit_kill", &Cheats::AdoptOneHitKill},
+      {"bd_cheat_battle_speed", &Cheats::AdoptBattleSpeed},
+      {"bd_cheat_level_up", &Cheats::AdoptLevelUp},
       {"bd_cheat_attack_mult", &Cheats::AdoptAttackMult},
       {"bd_cheat_magic_attack_mult", &Cheats::AdoptMagicAttackMult},
       {"bd_cheat_defence_mult", &Cheats::AdoptDefenceMult},
@@ -234,6 +250,9 @@ private:
   bool statusImmune_ = false;
   bool unlockClasses_ = false;
   bool oneHitKill_ = false;
+  i32 battleSpeed_ = 1;
+  i32 levelUp_ = 0;
+  i32 pendingLevelUp_ = 0;
   i32 attackMult_ = 1;
   i32 magicAttackMult_ = 1;
   i32 defenceMult_ = 1;
