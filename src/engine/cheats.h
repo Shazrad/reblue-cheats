@@ -172,6 +172,17 @@ public:
   // every field of that block, so scaling here never compounds across calls.
   void ScaleBattleParams(u32 paramsEA);
 
+  // EXP/SP per Fight, applied inside the game's own battle result. The
+  // result step (0x8223F3B8, battle manager in r3) copies the fight's EXP
+  // and SP into the result window and then awards them per member through
+  // Player_AdjustExpAward / Player_AdjustSpAward. Begin/EndResultStep bracket
+  // that call: the awards are scaled only inside it, and the window's
+  // numbers once per battle, so the screen shows what is actually paid.
+  void BeginResultStep() { inResultStep_ = true; }
+  void EndResultStep(u32 battleEA);
+  u32 ScaleExpAward(u32 amount) const;
+  u32 ScaleSpAward(u32 amount) const;
+
   // The stat bonus is lent to one recompute rather than written into the
   // save: LendStatBonus raises the chara's permanent bonus slots so the
   // guest's own formula and caps apply it, and ReturnStatBonus puts the saved
@@ -277,6 +288,8 @@ private:
   bool statusImmune_ = false;
   bool unlockClasses_ = false;
   bool oneHitKill_ = false;
+  bool inResultStep_ = false;
+  u32 resultWindowScaled_ = 0; // result window already scaled this battle
   i32 battleSpeed_ = 1;
   i32 levelUp_ = 0;
   i32 pendingLevelUp_ = 0;

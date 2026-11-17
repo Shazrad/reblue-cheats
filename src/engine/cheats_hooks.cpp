@@ -35,3 +35,29 @@ REX_HOOK_RAW(Player_CalcBattleParams) {
   cheats.ReturnStatBonus(loan);
   cheats.ScaleBattleParams(params);
 }
+
+REX_EXTERN(__imp__BattleResult_Step);
+REX_EXTERN(__imp__Player_AdjustExpAward);
+REX_EXTERN(__imp__Player_AdjustSpAward);
+
+// The battle result. Bracketed so the award hooks below only scale what this
+// step pays out, and so the result window can be scaled after its copy.
+REX_HOOK_RAW(BattleResult_Step) {
+  auto &cheats = bd::engine::Cheats::Get();
+  const u32 battle = ctx.r3.u32;
+  cheats.BeginResultStep();
+  __imp__BattleResult_Step(ctx, base);
+  cheats.EndResultStep(battle);
+}
+
+// (chara, amount) -> the amount after the chara's own bonuses, which the
+// result step then hands to Player_AddExp / Player_AddClassSP.
+REX_HOOK_RAW(Player_AdjustExpAward) {
+  __imp__Player_AdjustExpAward(ctx, base);
+  ctx.r3.u64 = bd::engine::Cheats::Get().ScaleExpAward(ctx.r3.u32);
+}
+
+REX_HOOK_RAW(Player_AdjustSpAward) {
+  __imp__Player_AdjustSpAward(ctx, base);
+  ctx.r3.u64 = bd::engine::Cheats::Get().ScaleSpAward(ctx.r3.u32);
+}

@@ -1112,12 +1112,63 @@ void Cheats::ScaleBattleParams(u32 paramsEA) {
 
 // ---- per-fight rewards ----
 
+namespace {
+// The battle manager's per-fight EXP and SP, and the result window it copies
+// them into: BattleResult_Step stores +272/+276 into window+740/+744 just
+// before it awards them.
+constexpr u32 kBattleExpOff = 272;
+constexpr u32 kBattleSpOff = 276;
+constexpr u32 kBattleResultWindowOff = 248;
+constexpr u32 kWindowExpOff = 740;
+constexpr u32 kWindowSpOff = 744;
+
+u32 Scaled(u32 amount, i32 mult) {
+  if (mult <= 1 || static_cast<i32>(amount) <= 0)
+    return amount;
+  return static_cast<u32>(std::min<u64>(static_cast<u64>(amount) * u64(mult),
+                                        u64(kProgressMax)));
+}
+} // namespace
+
+u32 Cheats::ScaleExpAward(u32 amount) const {
+  return inResultStep_ ? Scaled(amount, expMult_) : amount;
+}
+
+u32 Cheats::ScaleSpAward(u32 amount) const {
+  return inResultStep_ ? Scaled(amount, spMult_) : amount;
+}
+
+void Cheats::EndResultStep(u32 battleEA) {
+  inResultStep_ = false;
+  if ((expMult_ <= 1 && spMult_ <= 1) || !battleEA)
+    return;
+  const u32 window = mem::try_load<u32>(battleEA + kBattleResultWindowOff);
+  if (!window || resultWindowScaled_ == window)
+    return;
+  const u32 exp = mem::try_load<u32>(window + kWindowExpOff);
+  const u32 sp = mem::try_load<u32>(window + kWindowSpOff);
+  // Nothing copied in yet: the step has not reached the result.
+  if (static_cast<i32>(exp) <= 0 && static_cast<i32>(sp) <= 0)
+    return;
+  // The copy and the window were made this step from the manager's totals,
+  // which the awards also read, so the scaled screen matches what is paid.
+  if (exp == mem::try_load<u32>(battleEA + kBattleExpOff))
+    mem::try_store<u32>(window + kWindowExpOff, Scaled(exp, expMult_));
+  if (sp == mem::try_load<u32>(battleEA + kBattleSpOff))
+    mem::try_store<u32>(window + kWindowSpOff, Scaled(sp, spMult_));
+  resultWindowScaled_ = window;
+  BD_CHEAT_DIAG("[cheat-diag] result window: exp {} -> {}, sp {} -> {}", exp,
+                mem::try_load<u32>(window + kWindowExpOff), sp,
+                mem::try_load<u32>(window + kWindowSpOff));
+}
+
 void Cheats::OnBattleStarted() {
+  resultWindowScaled_ = 0;
   armed_ = false;
   settleSteps_ = 0;
   preBattle_.clear();
 
-  if (expMult_ <= 1 && spMult_ <= 1 && goldMult_ <= 1 && medalsMult_ <= 1)
+  if (goldMult_ <= 1 && medalsMult_ <= 1)
     return;
 
   const auto &g = Game::Get();
@@ -1169,67 +1220,9 @@ bool Cheats::AwardRewards() {
 
   bool paid = false;
 
-  if (expMult_ > 1 || spMult_ > 1) {
-    const auto roster = g.FieldPlayerEntity().Roster();
-    if (roster) {
-      const size_t n = roster.Size();
-      for (size_t i = 0; i < n; ++i) {
-        Player c = roster.At(i).Chara();
-        if (!c)
-          continue;
-        const u32 ea = c.Address();
-        // Match on the character handle rather than the index: a battle can
-        // add a member, which would shift every position after it.
-        const auto it = std::find_if(
-            preBattle_.begin(), preBattle_.end(),
-            [ea](const MemberSnapshot &m) { return m.charaEA == ea; });
-        if (it == preBattle_.end())
-          continue;
-
-        if (expMult_ > 1) {
-          const u32 now = c.Exp();
-          // Only the remainder: the guest has already paid the base award.
-          const u64 bonus64 =
-              now > it->exp
-                  ? static_cast<u64>(now - it->exp) * u64(expMult_ - 1)
-                  : 0ull;
-          const u32 bonus =
-              static_cast<u32>(std::min<u64>(bonus64, u64(kProgressMax)));
-          if (bonus > 0) {
-            const u32 chara = c.Address();
-            const u32 before = now;
-            u32 ret = 0;
-            {
-              rex::ppc::stack_guard guard;
-              ret = GuestAddExp(chara, bonus);
-            }
-            const u32 after = c.Exp();
-            BD_CHEAT_DIAG("[cheat-diag] exp slot {} chara=0x{:08X} snap={} now={} "
-                    "bonus={} -> after={} ret={}",
-                    c.SlotId(), chara, it->exp, before, bonus, after, ret);
-            // Re-read rather than assume: the call may have levelled, and the
-            // snapshot has to move with it or the settle window pays twice.
-            it->exp = after;
-            paid = true;
-          }
-        }
-        if (spMult_ > 1) {
-          for (u32 k = 0; k < kCharaClassCount; ++k) {
-            const auto cls = static_cast<CharaClass>(k);
-            const u32 now = c.ClassSP(cls);
-            const u32 want = TopUp(it->sp[k], now, spMult_, kProgressMax);
-            if (want != now && c.SetClassSP(cls, want)) {
-              BD_CHEAT_DIAG("[cheat-diag] sp slot {} class {} snap={} now={} -> "
-                      "after={}",
-                      c.SlotId(), k, it->sp[k], now, want);
-              it->sp[k] = want;
-              paid = true;
-            }
-          }
-        }
-      }
-    }
-  }
+  // EXP and SP are not topped up here: they are scaled inside the game's
+  // own battle result (ScaleExpAward / ScaleSpAward), so the result screen
+  // shows them and the guest's level and rank loops pay them out.
 
   if (medalsMult_ > 1) {
     auto inv = g.ItemSaveData();

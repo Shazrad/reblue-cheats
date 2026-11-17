@@ -1170,6 +1170,9 @@
 0x823B2A08 = { name = "Player_CalcBattleParams" }
 0x823B3CD0 = { name = "Player_AddExp" }
 0x823B3DD8 = { name = "Player_ExpForLevel" }
+0x8223F3B8 = { name = "BattleResult_Step" }
+0x823B3B10 = { name = "Player_AdjustExpAward" }
+0x823B3BF0 = { name = "Player_AdjustSpAward" }
 0x823B4528 = { name = "Player_AddClassSP" }
 0x823B4600 = { name = "Class_SPForRank" }
 0x823B3618 = { name = "Player_ApplyPassiveEffect" }
