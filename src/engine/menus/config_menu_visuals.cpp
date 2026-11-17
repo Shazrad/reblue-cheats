@@ -212,7 +212,10 @@ void ConfigMenu::UpdateFooter() {
                            : (SettingsRowAction(settings_page_, cursor) ==
                                   SettingAction::ResetCheats
                                  ? "footer.reset"
-                                 : "footer.configure");
+                                 : SettingsRowAction(settings_page_, cursor) ==
+                                           SettingAction::RaiseLevel
+                                       ? "footer.apply"
+                                       : "footer.configure");
     SetFooter({.a = aKey, .b = "footer.back"});
     break;
   }
@@ -235,6 +238,7 @@ void ConfigMenu::UpdateFooter() {
   case State::CONFIRM_REBOOT:
   case State::CONFIRM_RESET_BINDS:
   case State::CONFIRM_RESET_CHEATS:
+  case State::CONFIRM_CHEAT_ACTION:
     SetFooter({});
     break;
   default:
@@ -380,9 +384,10 @@ void ConfigMenu::RefreshSettingsVisuals() {
       vb.SetFloat(opt.vis, 1.0);
       // Each action row names what A does; the keybind screen is "Configure",
       // the cheat reset asks to be pressed.
-      const char *label = SettingsRowAction(page, i) == SettingAction::ResetCheats
-                              ? "footer.reset"
-                              : "footer.configure";
+      const auto action = SettingsRowAction(page, i);
+      const char *label = action == SettingAction::ResetCheats ? "footer.reset"
+                          : action == SettingAction::RaiseLevel ? "footer.apply"
+                                                                : "footer.configure";
       vb.SetText(opt.name, i18n::Text(label));
       vb.SetString(opt.wnd, "BTN01_OF");
       vb.SetFloat(opt.dim, DimFor(disabled));

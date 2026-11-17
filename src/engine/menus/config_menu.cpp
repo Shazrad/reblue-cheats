@@ -465,6 +465,7 @@ void ConfigMenu::Transition(State next) {
   case State::CONFIRM_REBOOT:
   case State::CONFIRM_RESET_BINDS:
   case State::CONFIRM_RESET_CHEATS:
+  case State::CONFIRM_CHEAT_ACTION:
     confirm_popup_.Kill();
     break;
   default:
@@ -726,6 +727,12 @@ void ConfigMenu::Transition(State next) {
     BD_DEBUG("[config] state -> CONFIRM_RESET_CHEATS");
     break;
 
+  case State::CONFIRM_CHEAT_ACTION:
+    confirm_popup_.Create(task_, i18n::Text("menu.confirm.raise_level").c_str());
+    ActivateOnly(nullptr);
+    BD_DEBUG("[config] state -> CONFIRM_CHEAT_ACTION");
+    break;
+
   case State::CLOSING:
     BD_DEBUG("[config] state -> CLOSING");
     break;
@@ -772,6 +779,7 @@ void ConfigMenu::EnforceActiveFlags() {
   case State::CONFIRM_REBOOT:
   case State::CONFIRM_RESET_BINDS:
   case State::CONFIRM_RESET_CHEATS:
+  case State::CONFIRM_CHEAT_ACTION:
     ActivateOnly(nullptr);
     break;
   default:
@@ -974,6 +982,9 @@ void ConfigMenu::Update(PPCContext &ctx, u8 *base) {
     break;
   case State::CONFIRM_RESET_CHEATS:
     HandleConfirmResetCheats();
+    break;
+  case State::CONFIRM_CHEAT_ACTION:
+    HandleConfirmCheatAction();
     break;
   default:
     break;

@@ -522,7 +522,6 @@ constexpr SettingOption kBattleSpeed[] = {
     {.text = "3x", .num = 3},
     {.text = "4x", .num = 4}};
 constexpr SettingOption kLevelUp[] = {
-    {.text = "Off", .num = 0, .key = "opt.off"},
     {.text = "+1", .num = 1},
     {.text = "+10", .num = 10},
     {.text = "Max", .num = engine::Cheats::kLevelUpMax, .key = "opt.max"}};
@@ -606,6 +605,13 @@ constexpr SettingRow kCheatSettings[] = {
                  .set = [](double v) { return engine::Cheats::Get().SetLevelUp(static_cast<i32>(v)); }},
      .options = kLevelUp,
      .count = OptCount(kLevelUp)},
+    // Fires the amount chosen above, after a confirmation popup, so stepping
+    // through the choices never raises anything by itself.
+    {.label = "settings.cheats.raise_level.label",
+     .group = "menu.header.cheats_progress",
+     .desc = "settings.cheats.raise_level.desc",
+     .kind = SettingKind::Action,
+     .action = SettingAction::RaiseLevel},
     {.label = "settings.cheats.exp_mult.label",
      .group = "menu.header.cheats_progress",
      .binding = {.get = [] { return static_cast<double>(engine::Cheats::Get().ExpMult()); },

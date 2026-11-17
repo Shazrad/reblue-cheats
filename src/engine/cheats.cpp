@@ -104,10 +104,10 @@ REXCVAR_DEFINE_INT32(bd_cheat_battle_speed, 1, kCvarGroup,
                      "up (1-4). One logic tick runs per rendered frame at most, "
                      "so Nx needs at least 30*N fps. 1 leaves it alone.");
 
-REXCVAR_DEFINE_INT32(bd_cheat_level_up, 0, kCvarGroup,
-                     "Raise every roster member this many levels through the "
-                     "game's own level-up path (999 = max level). Runs once, "
-                     "then clears itself.");
+REXCVAR_DEFINE_INT32(bd_cheat_level_up, 1, kCvarGroup,
+                     "How many levels the Raise Party Level action adds to "
+                     "every roster member (999 = max level). Choosing it does "
+                     "nothing by itself; the confirmed action row raises.");
 
 REXCVAR_DEFINE_INT32(bd_cheat_attack_mult, 1, kCvarGroup,
                      "Multiply physical attack as the guest finishes each stat "
@@ -257,10 +257,6 @@ constexpr i32 kMultMax = 99;
 constexpr i32 kStatBonusMax = 99999;
 constexpr i32 kBattleSpeedMax = 4;
 
-// Bit of litGrants_ the level-up action lights while its row flashes. 29-31
-// are the achievement and give-all actions, 0-8 the category grants.
-constexpr u32 kLitLevelUp = 1u << 28;
-
 // The level table the guest's EXP functions read: its first word is the max
 // level. Both Player_AddExp and Player_ExpForLevel load it from here.
 constexpr u32 kLevelTablePtrEA = 0x82DC9B44;
@@ -353,11 +349,7 @@ void Cheats::AdoptBattleSpeed() {
       std::clamp(REXCVAR_GET(bd_cheat_battle_speed), kMultMin, kBattleSpeedMax);
 }
 void Cheats::AdoptLevelUp() {
-  levelUp_ = std::clamp(REXCVAR_GET(bd_cheat_level_up), 0, kLevelUpMax);
-  // Mirrors the setting like the other one-shots: turning it off cancels a
-  // queued raise, and a lit bit means it already fired and is waiting to
-  // disarm, so it must not queue again.
-  pendingLevelUp_ = (levelUp_ > 0 && !(litGrants_ & kLitLevelUp)) ? levelUp_ : 0;
+  levelUp_ = std::clamp(REXCVAR_GET(bd_cheat_level_up), 1, kLevelUpMax);
 }
 bool Cheats::SetLevelUp(i32 v) {
   return rex::cvar::SetFlagByName("bd_cheat_level_up", FormatCvar(v));
@@ -640,8 +632,6 @@ void Cheats::Apply() {
     const i32 levels = pendingLevelUp_;
     pendingLevelUp_ = 0;
     RaiseLevels(levels);
-    litGrants_ |= kLitLevelUp;
-    litSteps_ = kGrantLitSteps;
   }
 
   if (pendingGiveAll_) {
@@ -677,8 +667,6 @@ void Cheats::Apply() {
       SetUnlockAchievements(false);
     if (litGrants_ & (1u << 29))
       SetResetAchievements(false);
-    if (litGrants_ & kLitLevelUp)
-      SetLevelUp(0);
     // The turn-offs above re-mirror the cvars that are still on; drop any bit
     // that is lit so a row that just disarmed cannot queue itself again.
     pendingGrants_ &= ~litGrants_;

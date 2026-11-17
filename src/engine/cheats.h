@@ -97,12 +97,13 @@ public:
   i32 BattleSpeed() const { return battleSpeed_; }
   bool SetBattleSpeed(i32 v);
 
-  // One-shot: raise every roster member this many levels (kLevelUpMax for
-  // the game's max level), through the guest's own level-up path. Clears
-  // itself after it fires.
+  // How many levels the Raise Party Level action adds (kLevelUpMax for the
+  // game's max level). Only a choice: QueueLevelUp, from the menu's confirmed
+  // action row, is what raises them, through the guest's own level-up path.
   static constexpr i32 kLevelUpMax = 999;
   i32 LevelUp() const { return levelUp_; }
   bool SetLevelUp(i32 v);
+  void QueueLevelUp() { pendingLevelUp_ = levelUp_; }
 
   // 1 leaves the derived stat alone. Applied where the guest finishes the
   // recompute, so a change lands on the next recalc rather than immediately.

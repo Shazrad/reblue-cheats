@@ -41,7 +41,9 @@ enum class RowUi : int {
   Action,
 };
 
-enum class SettingAction { None, Keybinds, ResetCheats };
+// RaiseLevel is a cheat action that fires once after a confirmation popup,
+// using the amount its neighbouring choice row holds.
+enum class SettingAction { None, Keybinds, ResetCheats, RaiseLevel };
 
 const char *SettingsPageLabel(SettingsPage page);
 

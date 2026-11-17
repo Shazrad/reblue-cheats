@@ -309,6 +309,10 @@ void ConfigMenu::HandleSettings() {
         Transition(State::KEYBINDS);
       else if (SettingsRowAction(page, row) == SettingAction::ResetCheats)
         Transition(State::CONFIRM_RESET_CHEATS);
+      else if (SettingsRowAction(page, row) == SettingAction::RaiseLevel) {
+        pending_cheat_action_ = SettingsRowAction(page, row);
+        Transition(State::CONFIRM_CHEAT_ACTION);
+      }
       return;
     }
 
@@ -790,6 +794,26 @@ void ConfigMenu::HandleConfirmResetBinds() {
   }
 
   Transition(State::KEYBINDS);
+}
+
+void ConfigMenu::HandleConfirmCheatAction() {
+  if (!confirm_popup_.Poll())
+    return;
+
+  const bool confirmed = confirm_popup_.Confirmed();
+  confirm_popup_.Kill();
+
+  if (confirmed && pending_cheat_action_ == SettingAction::RaiseLevel) {
+    // Queued, not run here: the raise walks the roster from the game step,
+    // where the party is known to be in a settled state.
+    Cheats::Get().QueueLevelUp();
+    BD_DEBUG("[config] party level raise queued");
+  } else {
+    BD_DEBUG("[config] cheat action declined");
+  }
+  pending_cheat_action_ = SettingAction::None;
+
+  Transition(State::SETTINGS);
 }
 
 void ConfigMenu::HandleConfirmResetCheats() {

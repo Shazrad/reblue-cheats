@@ -51,6 +51,7 @@ public:
     CONFIRM_REBOOT,       // restart-to-apply confirmation popup active
     CONFIRM_RESET_BINDS,  // reset-every-bind confirmation popup active
     CONFIRM_RESET_CHEATS, // reset-all-cheats confirmation popup active
+    CONFIRM_CHEAT_ACTION, // one-shot cheat action confirmation popup active
     CLOSING,              // exit sequence
   };
 
@@ -139,6 +140,7 @@ private:
   void HandleConfirmReboot();
   void HandleConfirmResetBinds();
   void HandleConfirmResetCheats();
+  void HandleConfirmCheatAction();
 
   void UpdateDetailPanel(int cursor);
   void UpdateDLCDetail(int cursor);
@@ -223,6 +225,8 @@ private:
   int lang_pick_ = 0;
   std::vector<bool> lang_accept_;
   SysMesConfirm confirm_popup_;
+  // Which cheat action CONFIRM_CHEAT_ACTION is asking about.
+  SettingAction pending_cheat_action_ = SettingAction::None;
   SysMesNotice notice_popup_;
 };
 
