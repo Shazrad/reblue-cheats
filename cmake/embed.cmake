@@ -41,6 +41,11 @@ function(reblue_embed_directory)
         set(source "${out_dir}/${ident}.cpp")
         set(input "${ARG_ROOT}/${rel}")
         file(SIZE "${input}" size)
+        # The size above is baked into the header at configure time, while the
+        # bytes are re-embedded at build time. Without this, editing a file and
+        # building without reconfiguring pairs new bytes with the old length,
+        # silently truncating it (a cut-off localization.toml fails to parse).
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${input}")
 
         add_custom_command(
             OUTPUT "${source}"
