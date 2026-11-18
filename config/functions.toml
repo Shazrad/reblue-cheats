@@ -765,6 +765,8 @@
 0x821F6AA0 = { name = "AnimeData_method_6AA0", size = 0x7C }
 0x821F72E0 = { name = "bdCutsceneEventProcess", size = 0x2D8 }
 0x821F8098 = { name = "bdCutsceneCommandDispatchVtable", size = 0xB8 }
+0x821F9540 = { name = "bdFieldEncounterGather" }
+0x8228E148 = { name = "bdWorldRayHit" }
 0x821F98A0 = { name = "bdFieldEncounterMenuOpen" }
 0x821F9B48 = { name = "bdFieldEncounterMenuUpdate", size = 0x3E4 }
 0x821FB668 = { name = "bdPreBattleSetup", size = 0x2F0 }

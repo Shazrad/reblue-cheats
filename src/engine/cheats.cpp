@@ -55,6 +55,7 @@ REXCVAR_DECLARE(bool, bd_cheat_unlock_classes);
 REXCVAR_DECLARE(bool, bd_cheat_one_hit_kill);
 REXCVAR_DECLARE(bool, bd_cheat_perfect_charge);
 REXCVAR_DECLARE(int32_t, bd_cheat_walk_speed);
+REXCVAR_DECLARE(bool, bd_cheat_circle_all);
 REXCVAR_DECLARE(i32, bd_cheat_battle_speed);
 REXCVAR_DECLARE(i32, bd_cheat_level_up);
 REXCVAR_DECLARE(i32, bd_cheat_class_rank_up);
@@ -116,6 +117,10 @@ REXCVAR_DEFINE_BOOL(bd_cheat_perfect_charge, false, kCvarGroup,
 REXCVAR_DEFINE_INT32(bd_cheat_walk_speed, 100, kCvarGroup,
                      "Party walk speed on the field, in percent (100-300). "
                      "Collision still applies. 100 leaves it alone.");
+
+REXCVAR_DEFINE_BOOL(bd_cheat_circle_all, false, kCvarGroup,
+                    "The field circle takes in every enemy on the map, up to "
+                    "the game's own limit, however small it is drawn.");
 
 REXCVAR_DEFINE_INT32(bd_cheat_battle_speed, 1, kCvarGroup,
                      "Run game logic this many times faster while a battle is "
@@ -380,6 +385,9 @@ void Cheats::AdoptWalkSpeed() {
   walkSpeed_ =
       std::clamp(REXCVAR_GET(bd_cheat_walk_speed), kWalkSpeedMin, kWalkSpeedMax);
 }
+void Cheats::AdoptCircleAll() {
+  circleAll_ = REXCVAR_GET(bd_cheat_circle_all);
+}
 void Cheats::AdoptBattleSpeed() {
   battleSpeed_ =
       std::clamp(REXCVAR_GET(bd_cheat_battle_speed), kMultMin, kBattleSpeedMax);
@@ -542,6 +550,9 @@ bool Cheats::SetPerfectCharge(bool v) {
 }
 bool Cheats::SetWalkSpeed(i32 v) {
   return rex::cvar::SetFlagByName("bd_cheat_walk_speed", FormatCvar(v));
+}
+bool Cheats::SetCircleAll(bool v) {
+  return rex::cvar::SetFlagByName("bd_cheat_circle_all", FormatCvar(v));
 }
 bool Cheats::SetBattleSpeed(i32 v) {
   return rex::cvar::SetFlagByName("bd_cheat_battle_speed", FormatCvar(v));

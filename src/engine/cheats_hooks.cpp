@@ -189,3 +189,44 @@ REX_HOOK_RAW(bdCollisionSweep) {
   store<f32>(step + 0, x);
   store<f32>(step + 8, z);
 }
+
+REX_EXTERN(__imp__bdFieldEncounterGather);
+REX_EXTERN(__imp__bdCollisionRaycast);
+REX_EXTERN(__imp__bdWorldRayHit);
+
+namespace {
+// Set only while a Circle Catches All gather runs, the one place these two
+// generic line tests are bypassed.
+bool g_gatherIgnoresSight = false;
+} // namespace
+
+// (menu, centre, facing, out) with f1 = circle radius, f2 = arc (a full turn).
+// Walks the field enemy list and keeps each one whose distance is under its
+// own size plus f1 and that two line-of-sight tests (below) can see, up to the
+// game's limit of 32. A radius past any map's extent plus clear sight lines
+// takes them all; the enemy-side skip test still applies untouched.
+REX_HOOK_RAW(bdFieldEncounterGather) {
+  const bool all = bd::engine::Cheats::Get().CircleAll();
+  if (all)
+    ctx.f1.f64 = 1.0e6;
+  g_gatherIgnoresSight = all;
+  __imp__bdFieldEncounterGather(ctx, base);
+  g_gatherIgnoresSight = false;
+}
+
+// Line-of-sight tests between the player and an enemy: nonzero = blocked.
+REX_HOOK_RAW(bdCollisionRaycast) {
+  if (g_gatherIgnoresSight) {
+    ctx.r3.u64 = 0;
+    return;
+  }
+  __imp__bdCollisionRaycast(ctx, base);
+}
+
+REX_HOOK_RAW(bdWorldRayHit) {
+  if (g_gatherIgnoresSight) {
+    ctx.r3.u64 = 0;
+    return;
+  }
+  __imp__bdWorldRayHit(ctx, base);
+}

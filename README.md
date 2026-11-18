@@ -94,46 +94,60 @@ Everything below is new to re:Blue. All of it is configurable in game, from the 
 
 A full Cheats page in the config menu, reachable from the title screen or the camp menu. Every setting is live — no restart, no save editing — and each one persists per profile.
 
+Cheats with a known risk carry a **Risk** note below. Several of them change your save for good: what they give you stays in it after you switch the cheat off and save. Back up your save before using those (see [Where is my save data and configuration stored?](#where-is-my-save-data-and-configuration-stored)).
+
 **In Battle**
 
-- Battle Speed: Off / 2x / 3x / 4x. Everything in a battle runs faster (animations, timers, enemy turns) and drops back to normal as soon as the battle ends. One game tick runs per rendered frame at most, so Nx needs at least 30×N fps
-- Walk Speed: Off / 1.5x / 2x / 3x. Your party moves faster on the field while you are in control; cutscenes, scripted walks and enemies keep their normal pace, and walls still stop you. The walk animation plays at its normal rate
+- Battle Speed: Off / 2x / 3x / 4x. Everything in a battle runs faster (animations, timers, enemy turns) and drops back to normal as soon as the battle ends. One game tick runs per rendered frame at most, so Nx needs at least 30×N fps. **Risk:** timed inputs such as the charge gauge speed up too, so they are harder to hit at 3x and 4x.
 - Invincibility: the party is topped back up continuously, so ordinary fights stop being a threat. A single hit big enough to kill from full HP will still land, and anyone already knocked out stays down
 - Infinite MP: cast freely; MP refills as fast as you spend it
 - Status Immunity: poison, sleep, petrify and the rest simply stop landing, and anything already on your party is cleared
-- One-Hit Kill: enemies are held at 1 HP, so the next hit that connects finishes them. Battles still resolve normally, so you keep the EXP, gold and drops
+- One-Hit Kill: enemies are held at 1 HP, so the next hit that connects finishes them. Battles still resolve normally, so you keep the EXP, gold and drops. **Risk:** it applies to bosses and story fights as well. Not tested in fights the story expects you to lose.
 - Perfect Charge: every charge gauge counts as released on its red zone, wherever you let go, so even a quick tap gets the full red-zone bonus. The game applies its own bonus; the gauge simply sits on the red zone
+
+**On the Field**
+
+- Walk Speed: Off / 1.5x / 2x / 3x. Your party moves faster on the field while you are in control; cutscenes, scripted walks and enemies keep their normal pace, and walls still stop you. The walk animation plays at its normal rate. **Risk:** tested on ordinary field maps; not yet tried everywhere, such as ladders, ropes or every event area.
+- Circle Catches All: the field circle pulls every enemy on the map into one fight, however small you draw it and whether or not you can see them. The game's own limits still apply: up to 32 enemies, and only ones that can normally be pulled in. Fights that big are long and can be dangerous, so pairing this with One-Hit Kill or Invincibility helps. **Risk:** a fight with that many enemies takes a long time to load and play, and losing it is a game over like any other.
 
 **Power** — Off / 2x / 5x / 10x
 
-- Attack, Magic Attack, Defence, Magic Defence and Agility: each multiplied independently, so you can turn up exactly what you want
+- Attack: multiplies your party's physical attack, so weapon and skill hits land harder
+- Magic Attack: multiplies your party's magic attack, so attack spells hit harder
+- Defence: multiplies your party's defence, cutting the damage physical hits do to you
+- Magic Defence: multiplies your party's magic defence, cutting the damage enemy spells do to you
+- Agility: multiplies your party's agility, so your turns come round sooner
 - Stat Bonus: Off / +999 / +9999 bonus to max HP, max MP and every combat stat, for when a multiplier isn't blunt enough. It goes through the game's own stat formula and caps and is never written to your save, so switching it off takes it away again
 
-Multipliers and the stat bonus take effect from the next battle or equipment change.
+Each multiplier is set on its own, so you can turn up exactly what you want. Multipliers and the stat bonus take effect from the next battle or equipment change.
 
 **Progression**
 
-- EXP per Fight: Off / 10x / 50x / 100x. Applied inside the game's own battle result, so the results screen shows the boosted EXP and levels arrive through the normal level-up
-- SP per Fight: Off / 10x / 50x / 100x, applied the same way: shown on the results screen, ranks earned through the normal rank-up
+- EXP per Fight: Off / 10x / 50x / 100x. Applied inside the game's own battle result, so the results screen shows the boosted EXP and levels arrive through the normal level-up. **Risk:** the levels you gain are permanent, and at 50x or 100x you can outlevel the game in a few fights.
+- SP per Fight: Off / 10x / 50x / 100x, applied the same way: shown on the results screen, ranks earned through the normal rank-up. **Risk:** the ranks you gain are permanent.
 - Gold per Fight: Off / 2x / 3x / 5x, shown on the results screen. Only the battle payout is scaled; shops, chests and events pay what they always did
 - Medals per Fight: Off / 2x / 3x / 5x, for the ruins-only currency
-- Infinite Gold: held at 99,999,999
-- Infinite Medals: held at 9,999
-- Unlock All Classes: all nine jobs open on every party member, reserves included
-- Raise Party Level: choose +1 / +10 / Max, then confirm. Every party member levels up through the game's own level-up, stat gains included
-- Raise Class Ranks: choose +1 / +10 / Max, then confirm. Every unlocked class of every party member ranks up through the game's own rank-up
+- Infinite Gold: held at 99,999,999. **Risk:** the gold is written to your save and stays after you switch the cheat off.
+- Infinite Medals: held at 9,999. **Risk:** the medals are written to your save and stay after you switch the cheat off.
+- Unlock All Classes: all nine jobs open on every party member, reserves included. **Risk:** the unlocks are written to your save and stay after you switch the cheat off.
+- Raise Party Level: choose +1 / +10 / Max, then confirm. Every party member levels up through the game's own level-up, stat gains included. **Risk:** permanent. Levels cannot be lowered again, and a high level makes the rest of the game very easy.
+- Raise Class Ranks: choose +1 / +10 / Max, then confirm. Every unlocked class of every party member ranks up through the game's own rank-up. **Risk:** permanent. Ranks cannot be lowered again.
 
 **Items**
 
-- Item Spawner: a window with a category dropdown (Heal, Usable, Spellbooks, Arm, Finger, Ear, Neck, Chest, Valuables), name search and item list showing how many you hold. Pick any item, choose a quantity (1-99) and Give, or double-click it. Give All Listed adds everything the list currently shows, so "All categories" with no search gives one of every item. Use mouse and keyboard there; Esc closes it
+- Item Spawner: a window with a category dropdown (Heal, Usable, Spellbooks, Arm, Finger, Ear, Neck, Chest, Valuables), name search and item list showing how many you hold. Pick any item, choose a quantity (1-99) and Give, or double-click it. Give All Listed adds everything the list currently shows, so "All categories" with no search gives one of every item. Use mouse and keyboard there; Esc closes it. **Risk:** given items are permanent. Valuables are story key items; giving one before the story hands it to you may confuse story checks, so leave that category alone unless you know what you are doing. Give All Listed with "All categories" includes the Valuables.
 - Infinite Items: every stack you carry stays full, so nothing is spent by using or selling it. Key items (Valuables) are left alone so story checks still see the count they expect
 
 Gives add to what you already hold rather than replacing it, stop at 99 per stack, and skip the unused entries that show up in game as Worthless Junk.
 
 **Encyclopedia**
 
-- Achievements 100%: awards the entire catalogue, all 51
-- Reset Achievements: locks them all again, if you'd rather earn them
+- Achievements 100%: awards the entire catalogue, all 51. **Risk:** they all count as earned on this profile, and Reset Achievements is the only way back.
+- Reset Achievements: locks them all again, if you'd rather earn them. **Risk:** it also locks the ones you earned yourself. There is no undo.
+
+**General**
+
+- Reset All Cheats: asks you to confirm, then sets every cheat back to its default (toggles off, multipliers at 1). Anything already written into your save stays: class unlocks, items, levels, ranks, gold and medals
 
 **Debug**
 
