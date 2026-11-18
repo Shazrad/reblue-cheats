@@ -16,7 +16,7 @@ on:
         description: "rexglue-sdk release tag, or 'latest-nightly' / 'latest-stable'"
         required: false
         type: string
-        default: latest-nightly
+        default: v0.10.1
       asset_tag:
         description: "Extra name segment: reblue-<version><asset_tag>-<platform>.<ext>"
         required: false

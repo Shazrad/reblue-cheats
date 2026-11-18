@@ -1,7 +1,10 @@
 name: Release
 
 # Push a v* tag and it builds Windows and Linux, then publishes the tag as a
-# release. A tag with a suffix (v0.5.0-rc1) publishes as a prerelease.
+# release. v<version>-cheats<n> (v1.3.1-cheats1) publishes as a full release;
+# any other suffix (v1.3.1-rc1) as a prerelease. There is no update server:
+# upstream's manifest and R2 upload steps are removed, so builds never offer
+# to "update" to official re:Blue.
 # workflow_dispatch builds the same jobs without publishing.
 #
 # macOS is off, here and in the nightly. _build-macos.yml stays put: turning it
@@ -17,7 +20,7 @@ on:
         description: "rexglue-sdk release: latest-nightly, latest-stable, or an explicit tag"
         required: false
         type: string
-        default: latest-nightly
+        default: v0.10.1
 
 permissions:
   contents: write
@@ -31,7 +34,8 @@ jobs:
   resolve:
     uses: ./.github/workflows/_resolve.yml
     with:
-      sdk_ref: ${{ inputs.sdk_ref || 'latest-nightly' }}
+      sdk_ref: ${{ inputs.sdk_ref || 'v0.10.1' }}
+      asset_tag: -cheats
     secrets: inherit
 
   verify:
@@ -48,10 +52,10 @@ jobs:
           VERSION: ${{ needs.resolve.outputs.version }}
         run: |
           case "${TAG}" in
-            "v${VERSION}")   echo "prerelease=false" >> "${GITHUB_OUTPUT}" ;;
-            "v${VERSION}-"*) echo "prerelease=true"  >> "${GITHUB_OUTPUT}" ;;
+            "v${VERSION}-cheats"*) echo "prerelease=false" >> "${GITHUB_OUTPUT}" ;;
+            "v${VERSION}-"*)       echo "prerelease=true"  >> "${GITHUB_OUTPUT}" ;;
             *)
-              echo "::error::tag ${TAG} does not match project version ${VERSION}; expected v${VERSION} or v${VERSION}-<suffix>"
+              echo "::error::tag ${TAG} does not match project version ${VERSION}; expected v${VERSION}-cheats<n> (release) or v${VERSION}-<suffix> (prerelease)"
               exit 1
               ;;
           esac
@@ -111,7 +115,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
-          name: reblue v${{ needs.resolve.outputs.version }}
+          name: reblue v${{ needs.resolve.outputs.version }} with cheats (${{ github.ref_name }})
           prerelease: ${{ needs.verify.outputs.prerelease == 'true' }}
           body_path: notes.md
           files: |
@@ -121,22 +125,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate manifest
-        run: |
-          python3 tools/gen_manifest.py \
-            "${{ needs.resolve.outputs.version }}" \
-            artifacts \
-            "${{ vars.UPDATE_BASE_URL }}/app/v${{ needs.resolve.outputs.version }}" \
-            "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" \
-            manifest.toml \
-            --content-url "${{ vars.UPDATE_BASE_URL }}/manifest/content.toml"
-
-      - name: Publish to R2
-        env:
-          VERSION: ${{ needs.resolve.outputs.version }}
-          PRERELEASE: ${{ needs.verify.outputs.prerelease }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-        run: bash .github/scripts/publish-r2.sh

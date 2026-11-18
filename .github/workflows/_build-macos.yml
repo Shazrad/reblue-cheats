@@ -42,7 +42,9 @@ permissions:
 env:
   SDK_REPO: rexglue/rexglue-sdk
   SDK_TAG: ${{ inputs.sdk_tag }}
-  ASSETS_REPO: zolaware/reblue-assets
+  # A private repo on the fork owner's account holding default.xex and the
+  # shaders, read with the ASSETS_TOKEN secret. Game files never go public.
+  ASSETS_REPO: ${{ github.repository_owner }}/reblue-assets
   # Every Mach-O in the bundle must load on this release. Raise it only once
   # every target Mac is known to be newer.
   MAX_MACOS: "13.3"

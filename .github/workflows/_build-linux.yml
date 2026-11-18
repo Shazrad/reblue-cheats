@@ -38,7 +38,9 @@ permissions:
 env:
   SDK_REPO: rexglue/rexglue-sdk
   SDK_TAG: ${{ inputs.sdk_tag }}
-  ASSETS_REPO: zolaware/reblue-assets
+  # A private repo on the fork owner's account holding default.xex and the
+  # shaders, read with the ASSETS_TOKEN secret. Game files never go public.
+  ASSETS_REPO: ${{ github.repository_owner }}/reblue-assets
 
 jobs:
   build:
