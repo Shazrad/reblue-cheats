@@ -94,13 +94,33 @@ Everything below is new to re:Blue. All of it is configurable in game, from the 
 
 A full Cheats page in the config menu, reachable from the title screen or the camp menu. Every setting is live — no restart, no save editing — and each one persists per profile.
 
-**[Download the cheats build](https://github.com/Shazrad/reblue-cheats/releases)** for Windows or Linux. If no release is listed yet, open the latest [Release run under Actions](https://github.com/Shazrad/reblue-cheats/actions/workflows/release.yml) and download `reblue-win-amd64` or `reblue-linux-amd64` (`reblue-linux-arm64` for ARM) from its **Artifacts** section. You must be signed in to GitHub to download artifacts.
+**Installing the cheats**
+
+1. Install the full game using the [How to Install](#how-to-install) instructions above, and launch it once to check it works.
+2. Download the cheats build for your system from the [Releases page](https://github.com/Shazrad/reblue-cheats/releases): the Windows `.zip`, or the Linux `.AppImage` (`amd64` for most PCs, `arm64` for ARM). If no release is listed yet, open the latest [Release run under Actions](https://github.com/Shazrad/reblue-cheats/actions/workflows/release.yml), sign in to GitHub, and download `reblue-win-amd64`, `reblue-linux-amd64` or `reblue-linux-arm64` from its **Artifacts** section.
+3. Copy the cheats build into your game:
+
+   **Windows**
+
+   1. Close the game if it is running.
+   2. Right-click the downloaded `.zip` and choose **Extract All**.
+   3. Open your re:Blue install folder, the one you picked in the setup wizard. It holds `reblue.exe` and the `game` and `profiles` folders. If you have the re:Blue desktop shortcut, right-click it and choose **Open file location**.
+   4. Optional but recommended: copy the `profiles` folder somewhere safe as a backup of your saves.
+   5. Copy everything from the extracted folder into the install folder. When Windows asks, choose **Replace the files in the destination**.
+   6. Start the game from `reblue.exe` in the install folder, or from the desktop shortcut.
+
+   **Linux**
+
+   1. Close the game if it is running.
+   2. Extract the `.AppImage` from the downloaded zip.
+   3. Optional but recommended: back up the `profiles` folder in your install folder (usually `~/.config/reblue/profiles`).
+   4. Move the cheats `.AppImage` to where you keep your current re:Blue AppImage, and delete or move away the old one.
+   5. Make it executable: `chmod +x reblue-*.AppImage`, or tick **Allow executing file as program** in the file's Properties.
+   6. Run the new AppImage. It finds your installed game and saves automatically; you don't need the discs or the setup wizard again.
 
 **Using the cheats**
 
-- Install the cheats build by following [How to Install](#how-to-install) above. The steps are the same on Windows and Linux. On Linux, make the `.AppImage` executable first (`chmod +x reblue-*.AppImage`). If you already have re:Blue installed, copy the new build over it instead; your saves are kept.
-- Start the game and open the config menu from the title screen, or from the camp menu while playing.
-- Go to the **Cheats** page.
+- Open the config menu from the title screen, or from the camp menu while playing, and go to the **Cheats** page.
 - Turn on the cheats you want, or set their multipliers. Changes take effect right away, with no restart needed.
 - To undo everything, use **Reset All Cheats** on the same page.
 
