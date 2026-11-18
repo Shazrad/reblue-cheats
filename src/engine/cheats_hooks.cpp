@@ -10,6 +10,8 @@
 
 #include "core/memory_helpers.h"
 #include "engine/cheats.h"
+#include "engine/field_player_entity.h"
+#include "engine/game.h"
 
 REX_EXTERN(__imp__Player_CalcBattleParams);
 
@@ -129,4 +131,61 @@ REX_HOOK_RAW(bdBattleChargeUpdate) {
   const u64 ret = ctx.r3.u64;
   PinChargeToZone(ctx, base, mgr);
   ctx.r3.u64 = ret;
+}
+
+REX_EXTERN(__imp__bdCharaFieldMove);
+REX_EXTERN(__imp__bdCollisionSweep);
+
+namespace {
+
+// Set for the length of one party member's field move, so the sweep below
+// only scales that step. Guest code runs on one thread.
+f32 g_partyStepScale = 1.0f;
+
+bool IsPartyChara(u32 chara) {
+  const auto field = bd::engine::Game::Get().FieldPlayerEntity();
+  if (!field || !field.HasControl())
+    return false;
+  for (const bd::engine::PlyTask &member : field.Party())
+    if (member.Chara().Address() == chara)
+      return true;
+  return false;
+}
+
+} // namespace
+
+// (chara) -- a character's own walk: heading * speed (+6412) plus velocity
+// (+6400..6408), handed to the collision sweep as the step. Enemies move
+// through bdPlayerFieldMovementUpdate instead (misnamed), so they are not
+// touched. Only party members, and only while the player is steering, so
+// cutscenes and scripted walks keep their pace.
+REX_HOOK_RAW(bdCharaFieldMove) {
+  const i32 mult = bd::engine::Cheats::Get().WalkSpeed();
+  if (mult > 100 && IsPartyChara(ctx.r3.u32))
+    g_partyStepScale = f32(mult) / 100.0f;
+  __imp__bdCharaFieldMove(ctx, base);
+  g_partyStepScale = 1.0f;
+}
+
+// (world, pos, step, out, pos, step, ...) -- sweeps a step through collision.
+// While a party move is in flight, its horizontal step is scaled for the call
+// and put back after, so walls still stop it and the move's own bookkeeping
+// afterwards sees the step it built. One-shot per move.
+REX_HOOK_RAW(bdCollisionSweep) {
+  if (g_partyStepScale == 1.0f) {
+    __imp__bdCollisionSweep(ctx, base);
+    return;
+  }
+  using bd::mem::load;
+  using bd::mem::store;
+  const f32 k = g_partyStepScale;
+  g_partyStepScale = 1.0f;
+  const u32 step = ctx.r5.u32;
+  const f32 x = load<f32>(step + 0);
+  const f32 z = load<f32>(step + 8);
+  store<f32>(step + 0, x * k);
+  store<f32>(step + 8, z * k);
+  __imp__bdCollisionSweep(ctx, base);
+  store<f32>(step + 0, x);
+  store<f32>(step + 8, z);
 }

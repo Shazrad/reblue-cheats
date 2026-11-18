@@ -521,6 +521,11 @@ constexpr SettingOption kBattleSpeed[] = {
     {.text = "2x", .num = 2},
     {.text = "3x", .num = 3},
     {.text = "4x", .num = 4}};
+constexpr SettingOption kWalkSpeed[] = {
+    {.text = "Off", .num = 100, .key = "opt.off"},
+    {.text = "1.5x", .num = 150},
+    {.text = "2x", .num = 200},
+    {.text = "3x", .num = 300}};
 constexpr SettingOption kLevelUp[] = {
     {.text = "+1", .num = 1},
     {.text = "+10", .num = 10},
@@ -707,6 +712,13 @@ constexpr SettingRow kCheatSettings[] = {
     // cvar goes back to its default (toggles off, multipliers at 1) and the
     // change is saved with the config. Effects already written into the save --
     // unlocked classes, granted items -- stay; the description says so.
+    {.label = "settings.cheats.walk_speed.label",
+     .group = "menu.header.cheats_general",
+     .desc = "settings.cheats.walk_speed.desc",
+     .binding = {.get = [] { return static_cast<double>(engine::Cheats::Get().WalkSpeed()); },
+                 .set = [](double v) { return engine::Cheats::Get().SetWalkSpeed(static_cast<i32>(v)); }},
+     .options = kWalkSpeed,
+     .count = OptCount(kWalkSpeed)},
     {.label = "settings.cheats.reset_all.label",
      .group = "menu.header.cheats_general",
      .desc = "settings.cheats.reset_all.desc",

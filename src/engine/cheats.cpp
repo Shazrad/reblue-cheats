@@ -54,6 +54,7 @@ REXCVAR_DECLARE(bool, bd_cheat_status_immune);
 REXCVAR_DECLARE(bool, bd_cheat_unlock_classes);
 REXCVAR_DECLARE(bool, bd_cheat_one_hit_kill);
 REXCVAR_DECLARE(bool, bd_cheat_perfect_charge);
+REXCVAR_DECLARE(int32_t, bd_cheat_walk_speed);
 REXCVAR_DECLARE(i32, bd_cheat_battle_speed);
 REXCVAR_DECLARE(i32, bd_cheat_level_up);
 REXCVAR_DECLARE(i32, bd_cheat_class_rank_up);
@@ -111,6 +112,10 @@ REXCVAR_DEFINE_BOOL(bd_cheat_one_hit_kill, false, kCvarGroup,
 REXCVAR_DEFINE_BOOL(bd_cheat_perfect_charge, false, kCvarGroup,
                     "Every charge gauge lands in its red zone, wherever it is "
                     "released, so even a tap counts as a perfect charge.");
+
+REXCVAR_DEFINE_INT32(bd_cheat_walk_speed, 100, kCvarGroup,
+                     "Party walk speed on the field, in percent (100-300). "
+                     "Collision still applies. 100 leaves it alone.");
 
 REXCVAR_DEFINE_INT32(bd_cheat_battle_speed, 1, kCvarGroup,
                      "Run game logic this many times faster while a battle is "
@@ -274,6 +279,8 @@ constexpr i32 kMultMin = 1;
 constexpr i32 kMultMax = 100;
 constexpr i32 kStatBonusMax = 99999;
 constexpr i32 kBattleSpeedMax = 4;
+constexpr i32 kWalkSpeedMin = 100;
+constexpr i32 kWalkSpeedMax = 300;
 
 // The level table the guest's EXP functions read: its first word is the max
 // level. Both Player_AddExp and Player_ExpForLevel load it from here.
@@ -368,6 +375,10 @@ void Cheats::AdoptOneHitKill() {
 }
 void Cheats::AdoptPerfectCharge() {
   perfectCharge_ = REXCVAR_GET(bd_cheat_perfect_charge);
+}
+void Cheats::AdoptWalkSpeed() {
+  walkSpeed_ =
+      std::clamp(REXCVAR_GET(bd_cheat_walk_speed), kWalkSpeedMin, kWalkSpeedMax);
 }
 void Cheats::AdoptBattleSpeed() {
   battleSpeed_ =
@@ -528,6 +539,9 @@ bool Cheats::SetOneHitKill(bool v) {
 }
 bool Cheats::SetPerfectCharge(bool v) {
   return rex::cvar::SetFlagByName("bd_cheat_perfect_charge", FormatCvar(v));
+}
+bool Cheats::SetWalkSpeed(i32 v) {
+  return rex::cvar::SetFlagByName("bd_cheat_walk_speed", FormatCvar(v));
 }
 bool Cheats::SetBattleSpeed(i32 v) {
   return rex::cvar::SetFlagByName("bd_cheat_battle_speed", FormatCvar(v));

@@ -102,6 +102,9 @@ public:
 
   // Logic speed while a battle is up: 1 (off) to 4.
   i32 BattleSpeed() const { return battleSpeed_; }
+  // Party walk speed in percent: 100 (off) to 300 (see cheats_hooks).
+  i32 WalkSpeed() const { return walkSpeed_; }
+  bool SetWalkSpeed(i32 v);
   bool SetBattleSpeed(i32 v);
 
   // How many levels the Raise Party Level action adds (kLevelUpMax for the
@@ -211,6 +214,7 @@ private:
   void AdoptOneHitKill();
   void AdoptPerfectCharge();
   void AdoptBattleSpeed();
+  void AdoptWalkSpeed();
   void AdoptLevelUp();
   void RaiseLevels(i32 levels);
   void AdoptClassRankUp();
@@ -250,6 +254,7 @@ private:
       {"bd_cheat_one_hit_kill", &Cheats::AdoptOneHitKill},
       {"bd_cheat_perfect_charge", &Cheats::AdoptPerfectCharge},
       {"bd_cheat_battle_speed", &Cheats::AdoptBattleSpeed},
+      {"bd_cheat_walk_speed", &Cheats::AdoptWalkSpeed},
       {"bd_cheat_level_up", &Cheats::AdoptLevelUp},
       {"bd_cheat_class_rank_up", &Cheats::AdoptClassRankUp},
       {"bd_cheat_attack_mult", &Cheats::AdoptAttackMult},
@@ -299,6 +304,7 @@ private:
   bool inResultStep_ = false;
   u32 resultWindowScaled_ = 0; // result window already scaled this battle
   i32 battleSpeed_ = 1;
+  i32 walkSpeed_ = 100;
   i32 levelUp_ = 0;
   i32 pendingLevelUp_ = 0;
   i32 classRankUp_ = 1;

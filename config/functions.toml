@@ -1,5 +1,6 @@
 [functions]
 0x822B8DF0 = { name = "Chara__Update" }
+0x822BAF58 = { name = "bdCharaFieldMove" }
 0x823F4F40 = { name = "issMap__Update" }
 0x824046C0 = { name = "issCamera__Update" }
 0x82406688 = { name = "issObject__Update" }
@@ -11,6 +12,7 @@
 0x82406E08 = { name = "issObject__Draw" }
 0x821621C8 = { name = "CharaVO__BuildBoneMatrices" }
 0x82168180 = { name = "CharaVO__vf10" }
+0x8216DEF8 = { name = "bdCollisionSweep" }
 0x822BA360 = { name = "Enemy__BuildTransformMatrix" }
 0x82411610 = { name = "issEffect__Update" }
 0x82412688 = { name = "issSprite__Update" }

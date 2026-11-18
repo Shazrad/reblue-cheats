@@ -97,6 +97,7 @@ A full Cheats page in the config menu, reachable from the title screen or the ca
 **In Battle**
 
 - Battle Speed: Off / 2x / 3x / 4x. Everything in a battle runs faster (animations, timers, enemy turns) and drops back to normal as soon as the battle ends. One game tick runs per rendered frame at most, so Nx needs at least 30×N fps
+- Walk Speed: Off / 1.5x / 2x / 3x. Your party moves faster on the field while you are in control; cutscenes, scripted walks and enemies keep their normal pace, and walls still stop you. The walk animation plays at its normal rate
 - Invincibility: the party is topped back up continuously, so ordinary fights stop being a threat. A single hit big enough to kill from full HP will still land, and anyone already knocked out stays down
 - Infinite MP: cast freely; MP refills as fast as you spend it
 - Status Immunity: poison, sleep, petrify and the rest simply stop landing, and anything already on your party is cleared
