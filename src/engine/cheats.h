@@ -182,6 +182,7 @@ public:
   void EndResultStep(u32 battleEA);
   u32 ScaleExpAward(u32 amount) const;
   u32 ScaleSpAward(u32 amount) const;
+  u32 ScaleGoldAward(u32 amount) const;
 
   // The stat bonus is lent to one recompute rather than written into the
   // save: LendStatBonus raises the chara's permanent bonus slots so the

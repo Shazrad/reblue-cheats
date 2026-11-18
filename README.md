@@ -113,7 +113,7 @@ Multipliers and the stat bonus take effect from the next battle or equipment cha
 
 - EXP per Fight: Off / 10x / 50x / 100x. Applied inside the game's own battle result, so the results screen shows the boosted EXP and levels arrive through the normal level-up
 - SP per Fight: Off / 10x / 50x / 100x, applied the same way: shown on the results screen, ranks earned through the normal rank-up
-- Gold per Fight: Off / 2x / 3x / 5x
+- Gold per Fight: Off / 2x / 3x / 5x, shown on the results screen. Only the battle payout is scaled; shops, chests and events pay what they always did
 - Medals per Fight: Off / 2x / 3x / 5x, for the ruins-only currency
 - Infinite Gold: held at 99,999,999
 - Infinite Medals: held at 9,999

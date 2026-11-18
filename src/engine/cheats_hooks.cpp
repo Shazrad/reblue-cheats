@@ -39,6 +39,7 @@ REX_HOOK_RAW(Player_CalcBattleParams) {
 REX_EXTERN(__imp__BattleResult_Step);
 REX_EXTERN(__imp__Player_AdjustExpAward);
 REX_EXTERN(__imp__Player_AdjustSpAward);
+REX_EXTERN(__imp__bdAddGold);
 
 // The battle result. Bracketed so the award hooks below only scale what this
 // step pays out, and so the result window can be scaled after its copy.
@@ -60,4 +61,11 @@ REX_HOOK_RAW(Player_AdjustExpAward) {
 REX_HOOK_RAW(Player_AdjustSpAward) {
   __imp__Player_AdjustSpAward(ctx, base);
   ctx.r3.u64 = bd::engine::Cheats::Get().ScaleSpAward(ctx.r3.u32);
+}
+
+// (wallet, amount): the battle result's one gold payment. Scaled only while
+// the result step runs, so shops, chests and scripts pay what they always did.
+REX_HOOK_RAW(bdAddGold) {
+  ctx.r4.u64 = bd::engine::Cheats::Get().ScaleGoldAward(ctx.r4.u32);
+  __imp__bdAddGold(ctx, base);
 }

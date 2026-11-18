@@ -1173,6 +1173,7 @@
 0x8223F3B8 = { name = "BattleResult_Step" }
 0x823B3B10 = { name = "Player_AdjustExpAward" }
 0x823B3BF0 = { name = "Player_AdjustSpAward" }
+0x82357968 = { name = "bdAddGold" }
 0x823B4528 = { name = "Player_AddClassSP" }
 0x823B4600 = { name = "Class_SPForRank" }
 0x823B3618 = { name = "Player_ApplyPassiveEffect" }

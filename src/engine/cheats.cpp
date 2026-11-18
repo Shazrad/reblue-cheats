@@ -1121,6 +1121,8 @@ constexpr u32 kBattleSpOff = 276;
 constexpr u32 kBattleResultWindowOff = 248;
 constexpr u32 kWindowExpOff = 740;
 constexpr u32 kWindowSpOff = 744;
+constexpr u32 kBattleGoldOff = 268;
+constexpr u32 kWindowGoldOff = 752;
 
 u32 Scaled(u32 amount, i32 mult) {
   if (mult <= 1 || static_cast<i32>(amount) <= 0)
@@ -1138,17 +1140,30 @@ u32 Cheats::ScaleSpAward(u32 amount) const {
   return inResultStep_ ? Scaled(amount, spMult_) : amount;
 }
 
+u32 Cheats::ScaleGoldAward(u32 amount) const {
+  if (!inResultStep_ || goldMult_ <= 1 || static_cast<i32>(amount) <= 0)
+    return amount;
+  return static_cast<u32>(std::min<u64>(static_cast<u64>(amount) * u64(goldMult_),
+                                        u64(kGoldMax)));
+}
+
 void Cheats::EndResultStep(u32 battleEA) {
-  inResultStep_ = false;
-  if ((expMult_ <= 1 && spMult_ <= 1) || !battleEA)
+  // Cleared on every way out, so an award outside the result is never scaled.
+  struct Clear {
+    bool &flag;
+    ~Clear() { flag = false; }
+  } clear{inResultStep_};
+  if ((expMult_ <= 1 && spMult_ <= 1 && goldMult_ <= 1) || !battleEA)
     return;
   const u32 window = mem::try_load<u32>(battleEA + kBattleResultWindowOff);
   if (!window || resultWindowScaled_ == window)
     return;
   const u32 exp = mem::try_load<u32>(window + kWindowExpOff);
   const u32 sp = mem::try_load<u32>(window + kWindowSpOff);
+  const u32 gold = mem::try_load<u32>(window + kWindowGoldOff);
   // Nothing copied in yet: the step has not reached the result.
-  if (static_cast<i32>(exp) <= 0 && static_cast<i32>(sp) <= 0)
+  if (static_cast<i32>(exp) <= 0 && static_cast<i32>(sp) <= 0 &&
+      static_cast<i32>(gold) <= 0)
     return;
   // The copy and the window were made this step from the manager's totals,
   // which the awards also read, so the scaled screen matches what is paid.
@@ -1156,10 +1171,14 @@ void Cheats::EndResultStep(u32 battleEA) {
     mem::try_store<u32>(window + kWindowExpOff, Scaled(exp, expMult_));
   if (sp == mem::try_load<u32>(battleEA + kBattleSpOff))
     mem::try_store<u32>(window + kWindowSpOff, Scaled(sp, spMult_));
+  if (gold == mem::try_load<u32>(battleEA + kBattleGoldOff))
+    mem::try_store<u32>(window + kWindowGoldOff, ScaleGoldAward(gold));
   resultWindowScaled_ = window;
-  BD_CHEAT_DIAG("[cheat-diag] result window: exp {} -> {}, sp {} -> {}", exp,
-                mem::try_load<u32>(window + kWindowExpOff), sp,
-                mem::try_load<u32>(window + kWindowSpOff));
+  BD_CHEAT_DIAG("[cheat-diag] result window: exp {} -> {}, sp {} -> {}, gold {} "
+                "-> {}",
+                exp, mem::try_load<u32>(window + kWindowExpOff), sp,
+                mem::try_load<u32>(window + kWindowSpOff), gold,
+                mem::try_load<u32>(window + kWindowGoldOff));
 }
 
 void Cheats::OnBattleStarted() {
@@ -1168,7 +1187,7 @@ void Cheats::OnBattleStarted() {
   settleSteps_ = 0;
   preBattle_.clear();
 
-  if (goldMult_ <= 1 && medalsMult_ <= 1)
+  if (medalsMult_ <= 1)
     return;
 
   const auto &g = Game::Get();
@@ -1239,19 +1258,7 @@ bool Cheats::AwardRewards() {
     }
   }
 
-  if (goldMult_ > 1) {
-    auto inv = g.ItemSaveData();
-    if (inv) {
-      const u32 now = inv.Gold();
-      const u32 want = TopUp(preGold_, now, goldMult_, kGoldMax);
-      if (want != now && inv.SetGold(want)) {
-        BD_CHEAT_DIAG("[cheat-diag] gold snap={} now={} -> after={}", preGold_, now,
-                want);
-        preGold_ = want;
-        paid = true;
-      }
-    }
-  }
+  // Gold is scaled inside the battle result (ScaleGoldAward) like EXP.
 
   // armed_ stays set until the settle window runs out in Apply(): a value can
   // still bank on a later frame, and its snapshot has moved with each payment.
