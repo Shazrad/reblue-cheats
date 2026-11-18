@@ -8,6 +8,7 @@
 #include <rex/ppc.h>
 #include <rex/types.h>
 
+#include "core/memory_helpers.h"
 #include "engine/cheats.h"
 
 REX_EXTERN(__imp__Player_CalcBattleParams);
@@ -68,4 +69,64 @@ REX_HOOK_RAW(Player_AdjustSpAward) {
 REX_HOOK_RAW(bdAddGold) {
   ctx.r4.u64 = bd::engine::Cheats::Get().ScaleGoldAward(ctx.r4.u32);
   __imp__bdAddGold(ctx, base);
+}
+
+REX_EXTERN(__imp__bdBattleChargeUpdate);
+REX_EXTERN(__imp__bdBattleActionChargeTime);
+
+namespace {
+
+// Battle manager fields the charge step owns.
+constexpr u32 kChargeStateOff = 408;  // 4 while the gauge is up
+constexpr u32 kChargeRatioOff = 416;  // gauge position, red zone units
+constexpr u32 kChargeAmountOff = 420; // ratio * charge time, banked on release
+constexpr u32 kZoneCentreOff = 440;   // red zone centre, picked per action
+constexpr u32 kChargeCtlOff = 560;    // the gauge the window draws (+396)
+constexpr u32 kChargeUserOff = 576;
+constexpr u32 kChargeActionOff = 584;
+constexpr u32 kCtlRatioOff = 396;
+constexpr u32 kStateCharging = 4;
+
+// Puts the gauge on its red zone centre. The release branch judges
+// |ratio - centre| < width from the values the last tick left behind, so
+// pinning before the call makes even a first-tick tap land, and pinning after
+// keeps the drawn gauge there instead of sweeping. Both are recomputed from the
+// untouched raw position every held tick, so turning the cheat off mid-charge
+// just lets the gauge carry on. The amount is the guest's own ratio * charge
+// time, which the original reads from the same call.
+void PinChargeToZone(PPCContext &ctx, u8 *base, u32 mgr) {
+  using bd::mem::load;
+  using bd::mem::store;
+  if (load<u32>(mgr + kChargeStateOff) != kStateCharging)
+    return;
+  const u32 ctl = load<u32>(mgr + kChargeCtlOff);
+  const u32 user = load<u32>(mgr + kChargeUserOff);
+  const u32 action = load<u32>(mgr + kChargeActionOff);
+  if (!ctl || !user || !action)
+    return;
+  const f32 centre = load<f32>(mgr + kZoneCentreOff);
+  ctx.r3.u64 = action;
+  ctx.r4.u64 = user;
+  __imp__bdBattleActionChargeTime(ctx, base);
+  const i32 time = ctx.r3.s32;
+  store<f32>(mgr + kChargeRatioOff, centre);
+  store<f32>(ctl + kCtlRatioOff, centre);
+  store<i32>(mgr + kChargeAmountOff, static_cast<i32>(f32(time) * centre));
+}
+
+} // namespace
+
+// (battle manager) -> next scene state. The charge gauge's per-tick step.
+REX_HOOK_RAW(bdBattleChargeUpdate) {
+  if (!bd::engine::Cheats::Get().PerfectCharge()) {
+    __imp__bdBattleChargeUpdate(ctx, base);
+    return;
+  }
+  const u32 mgr = ctx.r3.u32;
+  PinChargeToZone(ctx, base, mgr);
+  ctx.r3.u64 = mgr;
+  __imp__bdBattleChargeUpdate(ctx, base);
+  const u64 ret = ctx.r3.u64;
+  PinChargeToZone(ctx, base, mgr);
+  ctx.r3.u64 = ret;
 }

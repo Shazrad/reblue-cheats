@@ -101,6 +101,7 @@ A full Cheats page in the config menu, reachable from the title screen or the ca
 - Infinite MP: cast freely; MP refills as fast as you spend it
 - Status Immunity: poison, sleep, petrify and the rest simply stop landing, and anything already on your party is cleared
 - One-Hit Kill: enemies are held at 1 HP, so the next hit that connects finishes them. Battles still resolve normally, so you keep the EXP, gold and drops
+- Perfect Charge: every charge gauge counts as released on its red zone, wherever you let go, so even a quick tap gets the full red-zone bonus. The game applies its own bonus; the gauge simply sits on the red zone
 
 **Power** — Off / 2x / 5x / 10x
 

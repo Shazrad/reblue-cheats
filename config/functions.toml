@@ -808,6 +808,7 @@
 0x822347C0 = { name = "bdBattleSceneActionDispatch" }
 0x82237298 = { name = "bdBattleSceneActionStep" }
 0x822364D8 = { name = "bdBattleTargetSelectInput" }
+0x82236860 = { name = "bdBattleChargeUpdate" }
 0x8223E360 = { name = "bdBattleCheckEntityFlag", size = 0x80 }
 0x8223E3E0 = { name = "bdBattleCommandInputCheck", size = 0x1C4 }
 0x8223E5A8 = { name = "bdBattleTargetRefreshHighlights" }
@@ -1083,6 +1084,7 @@
 0x82372990 = { name = "bdDefenseTargetListLoad", size = 0x22C }
 0x82373B18 = { name = "bdEventMessageInit", size = 0x190 }
 0x823747A0 = { name = "bdEventPackLoad", size = 0x2A8 }
+0x823755E0 = { name = "bdBattleActionChargeTime" }
 0x82375C50 = { name = "bdItemTableFindById", size = 0x50 }
 0x82380050 = { name = "SelMesWinTask_ctor", size = 0x174 }
 0x823801C8 = { name = "SelMesWinTask__Dtor", size = 0x74 }

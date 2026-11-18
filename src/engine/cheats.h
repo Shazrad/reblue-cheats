@@ -96,6 +96,10 @@ public:
   bool OneHitKill() const { return oneHitKill_; }
   bool SetOneHitKill(bool v);
 
+  // Every charge gauge reads as released on its red zone (see cheats_hooks).
+  bool PerfectCharge() const { return perfectCharge_; }
+  bool SetPerfectCharge(bool v);
+
   // Logic speed while a battle is up: 1 (off) to 4.
   i32 BattleSpeed() const { return battleSpeed_; }
   bool SetBattleSpeed(i32 v);
@@ -205,6 +209,7 @@ private:
   void AdoptStatusImmune();
   void AdoptUnlockClasses();
   void AdoptOneHitKill();
+  void AdoptPerfectCharge();
   void AdoptBattleSpeed();
   void AdoptLevelUp();
   void RaiseLevels(i32 levels);
@@ -243,6 +248,7 @@ private:
       {"bd_cheat_status_immune", &Cheats::AdoptStatusImmune},
       {"bd_cheat_unlock_classes", &Cheats::AdoptUnlockClasses},
       {"bd_cheat_one_hit_kill", &Cheats::AdoptOneHitKill},
+      {"bd_cheat_perfect_charge", &Cheats::AdoptPerfectCharge},
       {"bd_cheat_battle_speed", &Cheats::AdoptBattleSpeed},
       {"bd_cheat_level_up", &Cheats::AdoptLevelUp},
       {"bd_cheat_class_rank_up", &Cheats::AdoptClassRankUp},
@@ -289,6 +295,7 @@ private:
   bool statusImmune_ = false;
   bool unlockClasses_ = false;
   bool oneHitKill_ = false;
+  bool perfectCharge_ = false;
   bool inResultStep_ = false;
   u32 resultWindowScaled_ = 0; // result window already scaled this battle
   i32 battleSpeed_ = 1;

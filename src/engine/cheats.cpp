@@ -53,6 +53,7 @@ REXCVAR_DECLARE(bool, bd_cheat_infinite_gold);
 REXCVAR_DECLARE(bool, bd_cheat_status_immune);
 REXCVAR_DECLARE(bool, bd_cheat_unlock_classes);
 REXCVAR_DECLARE(bool, bd_cheat_one_hit_kill);
+REXCVAR_DECLARE(bool, bd_cheat_perfect_charge);
 REXCVAR_DECLARE(i32, bd_cheat_battle_speed);
 REXCVAR_DECLARE(i32, bd_cheat_level_up);
 REXCVAR_DECLARE(i32, bd_cheat_class_rank_up);
@@ -106,6 +107,10 @@ REXCVAR_DEFINE_BOOL(bd_cheat_unlock_classes, false, kCvarGroup,
 REXCVAR_DEFINE_BOOL(bd_cheat_one_hit_kill, false, kCvarGroup,
                     "Hold every living enemy at 1 HP while a battle is up, so "
                     "the next hit that lands kills it.");
+
+REXCVAR_DEFINE_BOOL(bd_cheat_perfect_charge, false, kCvarGroup,
+                    "Every charge gauge lands in its red zone, wherever it is "
+                    "released, so even a tap counts as a perfect charge.");
 
 REXCVAR_DEFINE_INT32(bd_cheat_battle_speed, 1, kCvarGroup,
                      "Run game logic this many times faster while a battle is "
@@ -361,6 +366,9 @@ void Cheats::AdoptUnlockClasses() {
 void Cheats::AdoptOneHitKill() {
   oneHitKill_ = REXCVAR_GET(bd_cheat_one_hit_kill);
 }
+void Cheats::AdoptPerfectCharge() {
+  perfectCharge_ = REXCVAR_GET(bd_cheat_perfect_charge);
+}
 void Cheats::AdoptBattleSpeed() {
   battleSpeed_ =
       std::clamp(REXCVAR_GET(bd_cheat_battle_speed), kMultMin, kBattleSpeedMax);
@@ -518,6 +526,9 @@ bool Cheats::SetUnlockClasses(bool v) {
 bool Cheats::SetOneHitKill(bool v) {
   return rex::cvar::SetFlagByName("bd_cheat_one_hit_kill", FormatCvar(v));
 }
+bool Cheats::SetPerfectCharge(bool v) {
+  return rex::cvar::SetFlagByName("bd_cheat_perfect_charge", FormatCvar(v));
+}
 bool Cheats::SetBattleSpeed(i32 v) {
   return rex::cvar::SetFlagByName("bd_cheat_battle_speed", FormatCvar(v));
 }
@@ -629,6 +640,7 @@ void Cheats::Apply() {
     SetLogicSpeed(1.0);
     return;
   }
+
 
   // Re-decided every step from whether a battle manager answered this step,
   // so leaving a battle any way at all -- won, fled, game over -- drops back
