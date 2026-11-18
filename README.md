@@ -94,6 +94,23 @@ Everything below is new to re:Blue. All of it is configurable in game, from the 
 
 A full Cheats page in the config menu, reachable from the title screen or the camp menu. Every setting is live — no restart, no save editing — and each one persists per profile.
 
+**[Download the cheats build](https://github.com/Shazrad/reblue-cheats/releases)** for Windows or Linux. If no release is listed yet, open the latest [Release run under Actions](https://github.com/Shazrad/reblue-cheats/actions/workflows/release.yml) and download `reblue-win-amd64` or `reblue-linux-amd64` (`reblue-linux-arm64` for ARM) from its **Artifacts** section. You must be signed in to GitHub to download artifacts.
+
+**Installing on Windows**
+
+- Download the Windows `.zip` and extract it to any folder, such as Downloads.
+- First install: run the `.exe`, point the setup wizard at your three disc images, and pick an install folder. The program copies itself there, so you can delete the extracted folder afterwards.
+- Already have re:Blue installed: copy the extracted files over your install folder and replace them when asked. Your saves, settings and mods are kept. To be safe, back up `profiles\default\` first.
+- In game, open the config menu from the title screen or the camp menu and go to the Cheats page.
+
+**Installing on Linux**
+
+- Download the Linux artifact for your CPU (`amd64` for most PCs, `arm64` for ARM) and extract the `.AppImage` from the zip.
+- Make it executable with `chmod +x reblue-*.AppImage`, or tick "Allow executing file as program" in your file manager's Properties.
+- First install: run the AppImage and follow the setup wizard as on Windows. Pick an install folder; the default is usually `~/.config/reblue`.
+- Already have re:Blue installed: run the new AppImage in place of the old one. Your existing install, saves and settings are picked up as they are. To be safe, back up `profiles/default/` in your install folder first.
+- In game, open the config menu from the title screen or the camp menu and go to the Cheats page.
+
 Cheats with a known risk carry a **Risk** note below. Several of them change your save for good: what they give you stays in it after you switch the cheat off and save. Back up your save before using those (see [Where is my save data and configuration stored?](#where-is-my-save-data-and-configuration-stored)).
 
 **In Battle**
