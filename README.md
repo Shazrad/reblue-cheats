@@ -46,7 +46,7 @@ Requires all three retail Blue Dragon discs or their disc images. Steam Deck is 
 
 ## How to Install
 
-[Download latest release for your platform](https://github.com/zolaware/reblue/releases/latest) or [build yourself](#building)
+[Download latest release for your platform](https://github.com/Shazrad/reblue-cheats/releases/latest) or [build yourself](#building)
 
 1. Blue Dragon shipped on three DVDs, and you will need a disc image of each one from your own copy of the game.
 
@@ -96,31 +96,15 @@ A full Cheats page in the config menu, reachable from the title screen or the ca
 
 **Installing the cheats**
 
-1. Install the full game using the [How to Install](#how-to-install) instructions above, and launch it once to check it works.
-2. Open the [latest cheats release](https://github.com/Shazrad/reblue-cheats/releases/latest) and, under **Assets**, download the file for your system:
-   - Windows: the file ending in `-win-amd64.zip`
-   - Linux on most PCs: the file ending in `-x86_64.AppImage`
-   - Linux on ARM: the file ending in `-aarch64.AppImage`
+The cheats are built into every [release of this fork](https://github.com/Shazrad/reblue-cheats/releases/latest), so a fresh install by following [How to Install](#how-to-install) above already has them. If you already have re:Blue installed, switch it over instead:
 
-   You don't need the `-symbols.zip` file. It is only used for investigating crashes.
-3. Copy the cheats build into your game:
+1. [Download the latest release for your platform](https://github.com/Shazrad/reblue-cheats/releases/latest): the `-win-amd64.zip` on Windows, or the `-x86_64.AppImage` on Linux (`-aarch64.AppImage` on ARM). You don't need the `-symbols.zip`.
 
-   **Windows**
+2. Close the game and back up the `profiles` folder in your install folder, which holds your saves.
 
-   1. Close the game if it is running.
-   2. Right-click the downloaded `.zip` and choose **Extract All**.
-   3. Open your re:Blue install folder, the one you picked in the setup wizard. It holds `reblue.exe` and the `game` and `profiles` folders. If you have the re:Blue desktop shortcut, right-click it and choose **Open file location**.
-   4. Optional but recommended: copy the `profiles` folder somewhere safe as a backup of your saves.
-   5. Copy everything from the extracted folder into the install folder. When Windows asks, choose **Replace the files in the destination**.
-   6. Start the game from `reblue.exe` in the install folder, or from the desktop shortcut.
+3. On Windows, extract the zip and copy everything in it into your install folder, the one that holds `reblue.exe` and the `game` folder, replacing the files there. On Linux, replace your old AppImage with the new one and make it executable (`chmod +x reblue-*.AppImage`).
 
-   **Linux**
-
-   1. Close the game if it is running.
-   2. Optional but recommended: back up the `profiles` folder in your install folder (usually `~/.config/reblue/profiles`).
-   3. Move the downloaded `.AppImage` to where you keep your current re:Blue AppImage, and delete or move away the old one.
-   4. Make it executable: `chmod +x reblue-*.AppImage`, or tick **Allow executing file as program** in the file's Properties.
-   5. Run the new AppImage. It finds your installed game and saves automatically; you don't need the discs or the setup wizard again.
+4. Start the game. It picks up your existing install, saves and settings, so you won't be asked for your discs again.
 
 **Using the cheats**
 
