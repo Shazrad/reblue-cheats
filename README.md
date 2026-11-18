@@ -97,7 +97,12 @@ A full Cheats page in the config menu, reachable from the title screen or the ca
 **Installing the cheats**
 
 1. Install the full game using the [How to Install](#how-to-install) instructions above, and launch it once to check it works.
-2. Download the cheats build for your system from the [Releases page](https://github.com/Shazrad/reblue-cheats/releases): the Windows `.zip`, or the Linux `.AppImage` (`amd64` for most PCs, `arm64` for ARM). If no release is listed yet, open the latest [Release run under Actions](https://github.com/Shazrad/reblue-cheats/actions/workflows/release.yml), sign in to GitHub, and download `reblue-win-amd64`, `reblue-linux-amd64` or `reblue-linux-arm64` from its **Artifacts** section.
+2. Open the [latest cheats release](https://github.com/Shazrad/reblue-cheats/releases/latest) and, under **Assets**, download the file for your system:
+   - Windows: the file ending in `-win-amd64.zip`
+   - Linux on most PCs: the file ending in `-x86_64.AppImage`
+   - Linux on ARM: the file ending in `-aarch64.AppImage`
+
+   You don't need the `-symbols.zip` file. It is only used for investigating crashes.
 3. Copy the cheats build into your game:
 
    **Windows**
@@ -112,11 +117,10 @@ A full Cheats page in the config menu, reachable from the title screen or the ca
    **Linux**
 
    1. Close the game if it is running.
-   2. Extract the `.AppImage` from the downloaded zip.
-   3. Optional but recommended: back up the `profiles` folder in your install folder (usually `~/.config/reblue/profiles`).
-   4. Move the cheats `.AppImage` to where you keep your current re:Blue AppImage, and delete or move away the old one.
-   5. Make it executable: `chmod +x reblue-*.AppImage`, or tick **Allow executing file as program** in the file's Properties.
-   6. Run the new AppImage. It finds your installed game and saves automatically; you don't need the discs or the setup wizard again.
+   2. Optional but recommended: back up the `profiles` folder in your install folder (usually `~/.config/reblue/profiles`).
+   3. Move the downloaded `.AppImage` to where you keep your current re:Blue AppImage, and delete or move away the old one.
+   4. Make it executable: `chmod +x reblue-*.AppImage`, or tick **Allow executing file as program** in the file's Properties.
+   5. Run the new AppImage. It finds your installed game and saves automatically; you don't need the discs or the setup wizard again.
 
 **Using the cheats**
 
